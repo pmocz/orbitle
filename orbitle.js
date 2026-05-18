@@ -663,28 +663,15 @@ function render() {
 
     // Board
     h += `<div class="orbit-board">`;
-    h += `<div class="orbit-column-bands" aria-hidden="true">
-      <div></div>
-      <div class="orbit-column-band"></div>
-      <div class="orbit-column-band"></div>
-      <div class="orbit-column-band"></div>
-      <div class="orbit-column-band"></div>
-    </div>`;
-    h += `<div class="orbit-header-row">
-      <div></div>
-      <div class="orbit-header-cell">Orbit 1</div>
-      <div class="orbit-header-cell">Orbit 2</div>
-      <div class="orbit-header-cell">Orbit 3</div>
-      <div class="orbit-header-cell">Orbit 4</div>
-    </div>`;
-
-    CATEGORIES.forEach(cat => {
-      h += `<div class="orbit-row"><div class="orbit-row-label">${cat.label}</div>`;
-      for (let slot = 0; slot < 4; slot++) {
+    h += `<div class="orbit-columns">`;
+    for (let slot = 0; slot < 4; slot++) {
+      h += `<div class="orbit-column${selected.slot === slot ? " selected" : ""}" data-action="select-column" data-slot="${slot}" data-drop-column="true">`;
+      h += `<div class="orbit-header-cell">Orbit ${slot + 1}</div>`;
+      h += `<div class="orbit-column-values">`;
+      CATEGORIES.forEach(cat => {
         const v = board[cat.key][slot];
-        const isSel = selected.slot === slot;
         const cs = effectiveStrikes(cat.key, slot);
-        h += `<div class="orbit-cell${isSel ? " selected" : ""}${v === null ? " empty" : ""}" data-action="cell" data-cat="${cat.key}" data-slot="${slot}" data-drop-cell="true">`;
+        h += `<div class="orbit-cell${v === null ? " empty" : ""}" data-cat="${cat.key}" data-slot="${slot}">`;
         h += v !== null ? cellContentHTML(cat.key, v) : `·`;
         if (v !== null) {
           h += `<button class="orbit-cell-remove" data-action="remove-value" data-cat="${cat.key}" data-slot="${slot}" aria-label="Remove ${escHTML(cat.label)} from orbit ${slot + 1}">×</button>`;
@@ -693,12 +680,13 @@ function render() {
           h += `<div class="orbit-cell-strikes">&#x2717;${[...cs].map(vi => escHTML(cat.short[vi])).join(",")}</div>`;
         }
         h += `</div>`;
-      }
+      });
       h += `</div>`;
-    });
+      h += `</div>`;
+    }
+    h += `</div>`;
 
     h += `<div class="orbit-column-strikes" aria-hidden="true">`;
-    h += `<div></div>`;
     for (let slot = 0; slot < 4; slot++) {
       h += `<div class="orbit-strike-drop" data-strike-column="true" data-slot="${slot}">Strike</div>`;
     }
@@ -775,6 +763,7 @@ document.addEventListener("click", e => {
       crossedClues = n; render(); break;
     }
     case "cell":       handleCellClick(el.dataset.cat, parseInt(el.dataset.slot)); break;
+    case "select-column": handleCellClick(null, parseInt(el.dataset.slot)); break;
     case "pick-value": handleValuePick(el.dataset.cat, parseInt(el.dataset.val)); break;
     case "remove-value": handleRemoveValue(el.dataset.cat, parseInt(el.dataset.slot)); break;
     case "clear":      handleClear(); break;
@@ -786,8 +775,12 @@ document.addEventListener("click", e => {
 });
 
 function clearDragHighlights() {
-  document.querySelectorAll(".orbit-cell.drag-over").forEach(el => el.classList.remove("drag-over"));
+  document.querySelectorAll(".orbit-column.drag-over").forEach(el => el.classList.remove("drag-over"));
   document.querySelectorAll(".orbit-strike-drop.strike-over").forEach(el => el.classList.remove("strike-over"));
+}
+
+function highlightDropColumn(slot) {
+  document.querySelectorAll(`[data-drop-column='true'][data-slot='${slot}']`).forEach(el => el.classList.add("drag-over"));
 }
 
 function showDragGhost(x, y, html) {
@@ -833,9 +826,9 @@ function updatePointerDropTarget(x, y) {
     strike.classList.add("strike-over");
     return;
   }
-  const cell = target?.closest?.("[data-drop-cell='true']");
-  if (!cell) return;
-  document.querySelectorAll(`[data-drop-cell='true'][data-slot='${cell.dataset.slot}']`).forEach(el => el.classList.add("drag-over"));
+  const column = target?.closest?.("[data-drop-column='true']");
+  if (!column) return;
+  highlightDropColumn(column.dataset.slot);
 }
 
 function finishPointerTileDrag(x, y) {
@@ -847,8 +840,8 @@ function finishPointerTileDrag(x, y) {
     handleTileStrikeDrop(data.cat, parseInt(strike.dataset.slot), data.val);
     return;
   }
-  const cell = target?.closest?.("[data-drop-cell='true']");
-  if (cell) handleTileDrop(data.cat, parseInt(cell.dataset.slot), data.val);
+  const column = target?.closest?.("[data-drop-column='true']");
+  if (column) handleTileDrop(data.cat, parseInt(column.dataset.slot), data.val);
 }
 
 document.addEventListener("pointerdown", e => {
@@ -915,11 +908,11 @@ document.addEventListener("dragover", e => {
     return;
   }
 
-  const cell = e.target.closest("[data-drop-cell='true']");
-  if (!cell || status !== "playing") return;
+  const column = e.target.closest("[data-drop-column='true']");
+  if (!column || status !== "playing") return;
   e.preventDefault();
   e.dataTransfer.dropEffect = "copy";
-  document.querySelectorAll(`[data-drop-cell='true'][data-slot='${cell.dataset.slot}']`).forEach(el => el.classList.add("drag-over"));
+  highlightDropColumn(column.dataset.slot);
 });
 
 document.addEventListener("dragleave", e => {
@@ -929,17 +922,16 @@ document.addEventListener("dragleave", e => {
     return;
   }
 
-  const cell = e.target.closest("[data-drop-cell='true']");
-  if (!cell || cell.contains(e.relatedTarget)) return;
-  document.querySelectorAll(`[data-drop-cell='true'][data-slot='${cell.dataset.slot}']`).forEach(el => el.classList.remove("drag-over"));
+  const column = e.target.closest("[data-drop-column='true']");
+  if (!column || column.contains(e.relatedTarget)) return;
+  clearDragHighlights();
 });
 
 document.addEventListener("drop", e => {
   const strike = e.target.closest("[data-strike-column='true']");
   if (strike && status === "playing") {
     e.preventDefault();
-    document.querySelectorAll(".orbit-cell.drag-over").forEach(el => el.classList.remove("drag-over"));
-    document.querySelectorAll(".orbit-strike-drop.strike-over").forEach(el => el.classList.remove("strike-over"));
+    clearDragHighlights();
     let data = null;
     try { data = JSON.parse(e.dataTransfer.getData("text/plain")); } catch (_) { return; }
     if (!data) return;
@@ -947,22 +939,20 @@ document.addEventListener("drop", e => {
     return;
   }
 
-  const cell = e.target.closest("[data-drop-cell='true']");
-  if (!cell || status !== "playing") return;
+  const column = e.target.closest("[data-drop-column='true']");
+  if (!column || status !== "playing") return;
   e.preventDefault();
-  document.querySelectorAll(".orbit-cell.drag-over").forEach(el => el.classList.remove("drag-over"));
-  document.querySelectorAll(".orbit-strike-drop.strike-over").forEach(el => el.classList.remove("strike-over"));
+  clearDragHighlights();
   let data = null;
   try { data = JSON.parse(e.dataTransfer.getData("text/plain")); } catch (_) { return; }
   if (!data) return;
-  handleTileDrop(data.cat, parseInt(cell.dataset.slot), data.val);
+  handleTileDrop(data.cat, parseInt(column.dataset.slot), data.val);
 });
 
 document.addEventListener("dragend", () => {
   draggedTile = null;
   document.body.classList.remove("dragging-tile");
-  document.querySelectorAll(".orbit-cell.drag-over").forEach(el => el.classList.remove("drag-over"));
-  document.querySelectorAll(".orbit-strike-drop.strike-over").forEach(el => el.classList.remove("strike-over"));
+  clearDragHighlights();
 });
 
 // ============================================================

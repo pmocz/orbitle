@@ -173,30 +173,38 @@ body, html {
   overflow: hidden;
 }
 
-.orbit-column-bands {
-  position: absolute;
-  inset: 3.35rem 1rem 1rem;
+.orbit-columns {
   display: grid;
-  grid-template-columns: 80px repeat(4, 1fr);
-  gap: 0.4rem;
-  pointer-events: none;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.55rem;
 }
 
-.orbit-column-band {
+.orbit-column {
+  min-width: 0;
+  padding: 0.45rem;
   border: 1px solid rgba(107, 140, 184, 0.18);
   border-radius: 8px;
   background: linear-gradient(180deg, rgba(24, 32, 54, 0.55), rgba(8, 12, 22, 0.42));
   box-shadow: inset 0 0 22px rgba(107, 140, 184, 0.05);
+  cursor: pointer;
+  transition: all 0.15s;
 }
 
-.orbit-header-row {
-  display: grid;
-  grid-template-columns: 80px repeat(4, 1fr);
-  gap: 0.4rem;
-  margin-bottom: 0.6rem;
-  padding-bottom: 0.5rem;
-  position: relative;
-  z-index: 1;
+.orbit-column:hover {
+  border-color: rgba(107, 140, 184, 0.45);
+  background: linear-gradient(180deg, rgba(32, 42, 70, 0.65), rgba(12, 18, 32, 0.5));
+}
+
+.orbit-column.selected {
+  border-color: rgba(212, 166, 74, 0.72);
+  background: linear-gradient(180deg, rgba(72, 58, 30, 0.58), rgba(36, 28, 18, 0.48));
+  box-shadow: inset 0 0 0 1px rgba(212, 166, 74, 0.22), 0 0 22px rgba(212, 166, 74, 0.16);
+}
+
+.orbit-column.drag-over {
+  border-color: #d4a64a;
+  background: linear-gradient(180deg, rgba(80, 64, 34, 0.66), rgba(46, 34, 20, 0.54));
+  box-shadow: inset 0 0 0 1px rgba(212, 166, 74, 0.34), 0 0 18px rgba(212, 166, 74, 0.16);
 }
 
 .orbit-header-cell {
@@ -206,31 +214,18 @@ body, html {
   color: #5a6a85;
   text-align: center;
   font-weight: 400;
-  padding: 0.35rem 0.2rem;
-  border: 1px solid rgba(107, 140, 184, 0.15);
-  border-radius: 6px 6px 2px 2px;
-  background: rgba(20, 26, 44, 0.45);
+  padding: 0.15rem 0.1rem 0.45rem;
 }
 
-.orbit-row {
+.orbit-column.selected .orbit-header-cell,
+.orbit-column.drag-over .orbit-header-cell {
+  color: #d4a64a;
+}
+
+.orbit-column-values {
   display: grid;
-  grid-template-columns: 80px repeat(4, 1fr);
-  gap: 0.4rem;
-  margin-bottom: 0.25rem;
-  position: relative;
-  z-index: 1;
-}
-
-.orbit-row:last-child { margin-bottom: 0; }
-
-.orbit-row-label {
-  display: flex;
-  align-items: center;
-  font-size: 0.65rem;
-  letter-spacing: 0.15em;
-  text-transform: uppercase;
-  color: #6b8cb8;
-  font-weight: 500;
+  grid-template-rows: repeat(4, minmax(40px, auto));
+  gap: 0.25rem;
 }
 
 .orbit-cell {
@@ -238,7 +233,6 @@ body, html {
   border: 1px solid rgba(42, 53, 80, 0.8);
   border-radius: 2px;
   background: rgba(20, 26, 44, 0.72);
-  cursor: pointer;
   transition: all 0.15s;
   min-height: 40px;
   display: flex;
@@ -248,23 +242,6 @@ body, html {
   font-size: 0.78rem;
   color: #e0e6f0;
   position: relative;
-}
-
-.orbit-header-row + .orbit-row .orbit-cell { border-radius: 6px 6px 2px 2px; }
-.orbit-row:nth-of-type(6) .orbit-cell { border-radius: 2px 2px 6px 6px; }
-
-.orbit-cell:hover { border-color: #6b8cb8; background: rgba(40, 50, 80, 0.6); }
-
-.orbit-cell.selected {
-  border-color: #d4a64a;
-  background: rgba(60, 50, 30, 0.42);
-  box-shadow: inset 0 0 0 1px rgba(212, 166, 74, 0.28);
-}
-
-.orbit-cell.drag-over {
-  border-color: #d4a64a;
-  background: rgba(70, 58, 34, 0.45);
-  box-shadow: inset 0 0 0 1px rgba(212, 166, 74, 0.35);
 }
 
 .orbit-cell.empty { color: #3a4560; }
@@ -311,8 +288,8 @@ body, html {
 
 .orbit-column-strikes {
   display: none;
-  grid-template-columns: 80px repeat(4, 1fr);
-  gap: 0.4rem;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.55rem;
   margin-top: 0.45rem;
   position: relative;
   z-index: 1;
@@ -401,7 +378,6 @@ body.dragging-tile .orbit-cell-strikes {
 }
 
 .orbit-option.struck {
-  opacity: 0.4;
   text-decoration: line-through;
   border-color: #b85a5a;
 }
@@ -507,10 +483,10 @@ body.dragging-tile .orbit-cell-strikes {
 
 /* ── Responsive ── */
 @media (max-width: 600px) {
-  .orbit-header-row, .orbit-row { grid-template-columns: 60px repeat(4, 1fr); }
-  .orbit-column-bands { grid-template-columns: 60px repeat(4, 1fr); }
-  .orbit-column-strikes { grid-template-columns: 60px repeat(4, 1fr); }
-  .orbit-row-label, .orbit-header-cell { font-size: 0.55rem; }
+  .orbit-columns, .orbit-column-strikes { gap: 0.35rem; }
+  .orbit-column { padding: 0.35rem; }
+  .orbit-column-values { gap: 0.2rem; }
+  .orbit-header-cell { font-size: 0.55rem; letter-spacing: 0.14em; }
   .orbit-cell { font-size: 0.7rem; padding: 0.4rem 0.2rem; }
   .orbit-clue { font-size: 0.75rem; }
   .orbit-tile-tray { gap: 0.35rem; }
