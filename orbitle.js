@@ -656,7 +656,7 @@ function render() {
       Four orbits surround a star. Each orbit holds a unique <strong>color</strong>, <strong>planet</strong>,
       <strong>atmosphere</strong>, and <strong>moon count</strong>. Use the clues to deduce which attributes
       belong to which orbit. Every puzzle has exactly one solution reachable by pure logic — no guessing required.
-      Select an orbit column and tap tiles to place them. Select a Strike box and tap tiles to rule them out.
+      Select an orbit column and tap tiles to place them. Select a Rule out box and tap tiles to rule them out.
       Tap any clue to cross it off once you've used it.
     </div>`;
   }
@@ -700,7 +700,7 @@ function render() {
 
     h += `<div class="orbit-column-strikes">`;
     for (let slot = 0; slot < 4; slot++) {
-      h += `<div class="orbit-strike-drop${selected.slot === slot && selected.mode === "strike" ? " selected" : ""}" data-action="select-strike" data-strike-column="true" data-slot="${slot}">Strike</div>`;
+      h += `<div class="orbit-strike-drop${selected.slot === slot && selected.mode === "strike" ? " selected" : ""}" data-action="select-strike" data-strike-column="true" data-slot="${slot}">Rule out</div>`;
     }
     h += `</div>`;
     h += `</div>`; // end board
@@ -709,13 +709,13 @@ function render() {
     h += `<div class="orbit-picker">`;
     h += `<div class="orbit-tile-tray">`;
     CATEGORIES.forEach(cat => {
-      h += `<div class="orbit-options">`;
+      h += `<div class="orbit-tile-row"><div class="orbit-options">`;
       cat.values.forEach((_, vi) => {
         const canPick = selected.slot !== null;
         const placed = tileIsPlaced(cat.key, vi);
         h += `<button class="orbit-option${placed ? " placed" : ""}${canPick ? "" : " muted"}" data-action="pick-value" data-cat="${cat.key}" data-val="${vi}" draggable="false">${optionHTML(cat.key, vi)}</button>`;
       });
-      h += `</div>`;
+      h += `</div></div>`;
     });
     h += `</div>`;
     h += `</div>`; // end picker
