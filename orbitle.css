@@ -43,7 +43,7 @@ body, html {
   font-size: 0.6rem;
   letter-spacing: 0.4em;
   text-transform: uppercase;
-  color: #5a6a85;
+  color: #8fa3c4;
   font-weight: 300;
   margin-top: 0.4rem;
 }
@@ -59,7 +59,7 @@ body, html {
 .orbit-help-link {
   background: none;
   border: none;
-  color: #5a6a85;
+  color: #8fa3c4;
   font-size: 0.6rem;
   letter-spacing: 0.2em;
   text-transform: uppercase;
@@ -111,7 +111,7 @@ body, html {
   font-family: 'Cormorant Garamond', serif;
   font-style: italic;
   font-size: 0.95rem;
-  color: #6b8cb8;
+  color: #9cb8df;
   margin-bottom: 0.6rem;
   letter-spacing: 0.05em;
 }
