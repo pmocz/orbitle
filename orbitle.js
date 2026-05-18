@@ -657,7 +657,7 @@ function render() {
       Four orbits surround a star. Each orbit holds a unique <strong>color</strong>, <strong>planet</strong>,
       <strong>atmosphere</strong>, and <strong>moon count</strong>. Use the clues to deduce which attributes
       belong to which orbit. Every puzzle has exactly one solution reachable by pure logic — no guessing required.
-      Select an orbit column and tap tiles to place them. Select a Rule out box and tap tiles to rule them out.
+      Select an 'orbit column' and tap tiles to place them. Select a 'rule out' box and tap tiles to rule them out.
       Tap any clue to cross it off once you've used it.
     </div>`;
   }
@@ -915,7 +915,7 @@ function initStarfield() {
   const resize = () => {
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
-    stars = Array.from({ length: 140 }, () => ({
+    stars = Array.from({ length: 300 }, () => ({
       x: Math.random() * canvas.width, y: Math.random() * canvas.height,
       r: Math.random() * 1.1 + 0.2, a: Math.random() * 0.5 + 0.2,
       twinkle: Math.random() * 0.02 + 0.005, phase: Math.random() * Math.PI * 2,
