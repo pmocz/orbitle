@@ -424,20 +424,20 @@ body, html {
 
 .orbit-tile-icon.moons-1 {
   background:
-    radial-gradient(circle at 50% 8%, #d7deea 0 2.3px, transparent 2.5px);
+    radial-gradient(circle at 50% 10%, #d7deea 0 2.6px, transparent 2.8px);
 }
 
 .orbit-tile-icon.moons-2 {
   background:
-    radial-gradient(circle at 8% 50%, #d7deea 0 2.3px, transparent 2.5px),
-    radial-gradient(circle at 92% 50%, #8fa3c4 0 2.3px, transparent 2.5px);
+    radial-gradient(circle at 10% 50%, #d7deea 0 2.6px, transparent 2.8px),
+    radial-gradient(circle at 90% 50%, #8fa3c4 0 2.6px, transparent 2.8px);
 }
 
 .orbit-tile-icon.moons-3 {
   background:
-    radial-gradient(circle at 50% 8%, #d7deea 0 2.2px, transparent 2.4px),
-    radial-gradient(circle at 12% 78%, #8fa3c4 0 2.2px, transparent 2.4px),
-    radial-gradient(circle at 88% 78%, #6b8cb8 0 2.2px, transparent 2.4px);
+    radial-gradient(circle at 50% 16%, #d7deea 0 2.4px, transparent 2.6px),
+    radial-gradient(circle at 23% 70%, #8fa3c4 0 2.4px, transparent 2.6px),
+    radial-gradient(circle at 77% 70%, #6b8cb8 0 2.4px, transparent 2.6px);
 }
 
 .orbit-cell-remove {
