@@ -735,7 +735,7 @@ function render() {
         <div class="orbit-reveal-sub">System charted</div>
         <div class="orbit-reveal-title">Solved</div>
         <div style="font-size:0.85rem;color:#c0c8d8;margin-bottom:1.5rem;font-style:italic;font-family:'Cormorant Garamond',serif">
-          Every observation reconciled. The architecture of the system stands revealed.
+          All observations reconciled. The star system stands revealed.
         </div>
         <button class="orbit-btn gold" data-action="new-puzzle" style="width:100%">Chart Another</button>
       </div>
