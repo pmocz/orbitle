@@ -265,8 +265,17 @@ function clueBetween(sol) {
     if (cY === cZ && vY === vZ) continue;
     const sX = slotOf(sol, cX, vX), sY = slotOf(sol, cY, vY), sZ = slotOf(sol, cZ, vZ);
     const lo = Math.min(sY, sZ), hi = Math.max(sY, sZ);
-    if (sX > lo && sX < hi) {
-      return { text: `The ${labelFor(cX, vX)} orbits between the ${labelFor(cY, vY)} and the ${labelFor(cZ, vZ)}.`, test: (s) => { const a = slotOf(s,cX,vX), b = slotOf(s,cY,vY), c = slotOf(s,cZ,vZ); return a > Math.min(b,c) && a < Math.max(b,c); }, weight: 2 };
+    if (sX > lo && sX < hi && Math.abs(sX - sY) === 1 && Math.abs(sX - sZ) === 1) {
+      const inner = sY < sZ ? { cat: cY, val: vY } : { cat: cZ, val: vZ };
+      const outer = sY < sZ ? { cat: cZ, val: vZ } : { cat: cY, val: vY };
+      return {
+        text: `The ${labelFor(cX, vX)} orbits directly between the ${labelFor(inner.cat, inner.val)} and the ${labelFor(outer.cat, outer.val)}.`,
+        test: (s) => {
+          const a = slotOf(s,cX,vX), b = slotOf(s,cY,vY), c = slotOf(s,cZ,vZ);
+          return a > Math.min(b,c) && a < Math.max(b,c) && Math.abs(a - b) === 1 && Math.abs(a - c) === 1;
+        },
+        weight: 2
+      };
     }
   }
   return null;
@@ -491,6 +500,29 @@ function escHTML(s) {
   return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
 }
 
+function tileNameFor(cat, valIdx) {
+  if (cat === "color") return COLORS[valIdx];
+  if (cat === "planet") return PLANETS[valIdx];
+  if (cat === "atmosphere") return ATMOSPHERES[valIdx];
+  if (cat === "moons") return `${MOONS[valIdx]}-moon`;
+  return "?";
+}
+
+function escRegExp(s) {
+  return String(s).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+const TILE_NAMES = CATEGORIES.flatMap(cat => cat.values.map((_, vi) => tileNameFor(cat.key, vi)))
+  .sort((a, b) => b.length - a.length);
+
+function clueTextHTML(text) {
+  const pattern = TILE_NAMES.map(name => escRegExp(escHTML(name))).join("|");
+  return escHTML(text).replace(
+    new RegExp(`(^|[^A-Za-z0-9-])(${pattern})(?=[^A-Za-z0-9-]|$)`, "g"),
+    `$1<strong class="orbit-clue-tile">$2</strong>`
+  );
+}
+
 function cellContentHTML(cat, v) {
   if (cat === "color") {
     const hex = COLOR_HEX[COLORS[v]];
@@ -547,7 +579,7 @@ function render() {
     // Clues
     h += `<div class="orbit-clues"><div class="orbit-clues-header">Observations</div>`;
     puzzle.clues.forEach((c, i) => {
-      h += `<div class="orbit-clue${crossedClues.has(i) ? " crossed" : ""}" data-action="toggle-clue" data-idx="${i}">${escHTML(c.text)}</div>`;
+      h += `<div class="orbit-clue${crossedClues.has(i) ? " crossed" : ""}" data-action="toggle-clue" data-idx="${i}">${clueTextHTML(c.text)}</div>`;
     });
     h += `</div>`;
 

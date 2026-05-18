@@ -130,6 +130,16 @@ body, html {
 
 .orbit-clue:hover { color: #e0e6f0; background: rgba(40, 50, 80, 0.25); }
 
+.orbit-clue-tile {
+  font-weight: 700;
+  color: #e0e6f0;
+}
+
+.orbit-clue.crossed .orbit-clue-tile,
+.orbit-clue.crossed:hover .orbit-clue-tile {
+  color: inherit;
+}
+
 .orbit-clue::before {
   content: "◇";
   position: absolute;
