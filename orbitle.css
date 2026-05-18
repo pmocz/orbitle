@@ -316,101 +316,69 @@ body, html {
 }
 
 .orbit-tile-icon.atmosphere {
-  color: #b0eef8;
-  filter: drop-shadow(0 0 4px rgba(92, 198, 218, 0.42));
+  border: 1px solid rgba(92, 198, 218, 0.82);
+  border-radius: 50%;
+  box-shadow: 0 0 8px rgba(92, 198, 218, 0.38);
+}
+
+.orbit-tile-icon.atmosphere-ch {
+  border-color: rgba(115, 127, 145, 0.9);
+  box-shadow: 0 0 8px rgba(115, 127, 145, 0.42);
+}
+
+.orbit-tile-icon.atmosphere-h {
+  border-color: rgba(245, 247, 251, 0.9);
+  box-shadow: 0 0 8px rgba(245, 247, 251, 0.42);
+}
+
+.orbit-tile-icon.atmosphere-n {
+  border-color: rgba(120, 168, 255, 0.9);
+  box-shadow: 0 0 8px rgba(120, 168, 255, 0.42);
+}
+
+.orbit-tile-icon.atmosphere-o {
+  border-color: rgba(255, 107, 107, 0.9);
+  box-shadow: 0 0 8px rgba(255, 107, 107, 0.42);
 }
 
 .orbit-tile-icon.atmosphere::before,
 .orbit-tile-icon.atmosphere::after {
   content: "";
   position: absolute;
-  display: block;
+  inset: 2px;
+  border-top: 1px solid rgba(176, 238, 248, 0.95);
+  border-radius: 50%;
 }
 
-.orbit-tile-icon.atmosphere-o,
-.orbit-tile-icon.atmosphere-n,
-.orbit-tile-icon.atmosphere-h {
-  width: 14px;
-}
-
-.orbit-cell .orbit-tile-icon.atmosphere-o,
-.orbit-cell .orbit-tile-icon.atmosphere-n,
-.orbit-cell .orbit-tile-icon.atmosphere-h {
-  width: 12px;
-}
-
-.orbit-tile-icon.atmosphere-o {
-  color: #ff6b6b;
-  background:
-    radial-gradient(circle at 24% 50%, #ff6b6b 0 2.3px, transparent 2.5px),
-    radial-gradient(circle at 76% 50%, #ff6b6b 0 2.3px, transparent 2.5px);
-}
-
-.orbit-tile-icon.atmosphere-n {
-  color: #78a8ff;
-  background:
-    radial-gradient(circle at 24% 50%, #78a8ff 0 2.3px, transparent 2.5px),
-    radial-gradient(circle at 76% 50%, #78a8ff 0 2.3px, transparent 2.5px);
-}
-
-.orbit-tile-icon.atmosphere-h {
-  color: #f5f7fb;
-  background:
-    radial-gradient(circle at 26% 50%, #f5f7fb 0 1.9px, transparent 2.1px),
-    radial-gradient(circle at 74% 50%, #f5f7fb 0 1.9px, transparent 2.1px);
-}
-
-.orbit-tile-icon.atmosphere-o::before,
-.orbit-tile-icon.atmosphere-n::before,
-.orbit-tile-icon.atmosphere-h::before {
-  left: 25%;
-  right: 25%;
-  top: 50%;
-  height: 1px;
-  background: currentColor;
-  opacity: 0.78;
-  transform: translateY(-50%);
-}
-
-.orbit-tile-icon.atmosphere-o::after,
-.orbit-tile-icon.atmosphere-n::after,
-.orbit-tile-icon.atmosphere-h::after {
-  display: none;
-}
-
-.orbit-tile-icon.atmosphere-ch {
-  background:
-    radial-gradient(circle at 50% 50%, #737f91 0 2.4px, transparent 2.6px),
-    radial-gradient(circle at 50% 12%, #e0e6f0 0 1.5px, transparent 1.7px),
-    radial-gradient(circle at 50% 88%, #e0e6f0 0 1.5px, transparent 1.7px),
-    radial-gradient(circle at 12% 50%, #e0e6f0 0 1.5px, transparent 1.7px),
-    radial-gradient(circle at 88% 50%, #e0e6f0 0 1.5px, transparent 1.7px);
+.orbit-tile-icon.atmosphere::after {
+  inset: 4px 1px 1px 4px;
+  transform: rotate(38deg);
 }
 
 .orbit-tile-icon.atmosphere-ch::before,
 .orbit-tile-icon.atmosphere-ch::after {
-  left: 50%;
-  top: 50%;
-  width: 1px;
-  height: 12px;
-  background: rgba(176, 238, 248, 0.7);
-  transform-origin: center;
+  border-top-color: rgba(155, 166, 181, 0.95);
 }
 
-.orbit-tile-icon.atmosphere-ch::before {
-  transform: translate(-50%, -50%);
+.orbit-tile-icon.atmosphere-h::before,
+.orbit-tile-icon.atmosphere-h::after {
+  border-top-color: rgba(245, 247, 251, 0.95);
 }
 
-.orbit-tile-icon.atmosphere-ch::after {
-  transform: translate(-50%, -50%) rotate(90deg);
+.orbit-tile-icon.atmosphere-n::before,
+.orbit-tile-icon.atmosphere-n::after {
+  border-top-color: rgba(120, 168, 255, 0.95);
+}
+
+.orbit-tile-icon.atmosphere-o::before,
+.orbit-tile-icon.atmosphere-o::after {
+  border-top-color: rgba(255, 107, 107, 0.95);
 }
 
 .orbit-tile-icon.moons {
   width: 16px;
-  border: 1px solid rgba(143, 163, 196, 0.78);
-  border-radius: 50%;
   background: none;
-  filter: drop-shadow(0 0 4px rgba(143, 163, 196, 0.38));
+  filter: drop-shadow(0 0 4px rgba(215, 222, 234, 0.42));
 }
 
 .orbit-cell .orbit-tile-icon.moons {
@@ -422,15 +390,27 @@ body, html {
   display: none;
 }
 
+.orbit-tile-icon.moons-0::after {
+  content: "x";
+  display: block;
+  position: absolute;
+  color: #8fa3c4;
+  font-size: 0.48rem;
+  line-height: 1;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+}
+
 .orbit-tile-icon.moons-1 {
   background:
-    radial-gradient(circle at 50% 10%, #d7deea 0 2.6px, transparent 2.8px);
+    radial-gradient(circle at 50% 50%, #d7deea 0 2.6px, transparent 2.8px);
 }
 
 .orbit-tile-icon.moons-2 {
   background:
-    radial-gradient(circle at 10% 50%, #d7deea 0 2.6px, transparent 2.8px),
-    radial-gradient(circle at 90% 50%, #8fa3c4 0 2.6px, transparent 2.8px);
+    radial-gradient(circle at 24% 50%, #d7deea 0 2.6px, transparent 2.8px),
+    radial-gradient(circle at 76% 50%, #8fa3c4 0 2.6px, transparent 2.8px);
 }
 
 .orbit-tile-icon.moons-3 {

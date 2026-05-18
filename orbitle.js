@@ -51,7 +51,7 @@ function labelFor(cat, valIdx) {
   if (cat === "color") return `${COLORS[valIdx]} world`;
   if (cat === "planet") return `${PLANETS[valIdx]} planet`;
   if (cat === "atmosphere") return `${ATMOSPHERES[valIdx]} atmosphere`;
-  if (cat === "moons") return `${MOONS[valIdx]}-moon orbit`;
+  if (cat === "moons") return `${MOONS[valIdx]}-moon planet`;
   return "?";
 }
 
