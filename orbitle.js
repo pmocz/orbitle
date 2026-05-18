@@ -512,6 +512,7 @@ function handleValuePick(cat, valIdx) {
 
   if (selected.mode === "strike") {
     toggleStrike(cat, slot, valIdx);
+    selected = { cat: null, slot, mode: "place" };
   } else {
     placeValue(cat, slot, valIdx);
   }
