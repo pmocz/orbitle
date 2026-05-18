@@ -287,7 +287,7 @@ body, html {
 }
 
 .orbit-column-strikes {
-  display: none;
+  display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 0.55rem;
   margin-top: 0.45rem;
@@ -308,21 +308,27 @@ body, html {
   letter-spacing: 0.12em;
   line-height: 1;
   text-transform: uppercase;
-}
-
-body.dragging-tile .orbit-column-strikes {
-  display: grid;
+  cursor: pointer;
+  transition: all 0.15s;
 }
 
 body.dragging-tile .orbit-cell-strikes {
   opacity: 0.18;
 }
 
+.orbit-strike-drop:hover,
 .orbit-strike-drop.strike-over {
   border-color: #f0b0b0;
   background: rgba(110, 42, 48, 0.96);
   color: #ffe0e0;
   box-shadow: 0 0 10px rgba(184, 90, 90, 0.35);
+}
+
+.orbit-strike-drop.selected {
+  border-color: #f0b0b0;
+  background: rgba(124, 46, 52, 0.98);
+  color: #ffe0e0;
+  box-shadow: inset 0 0 0 1px rgba(240, 176, 176, 0.22), 0 0 14px rgba(184, 90, 90, 0.28);
 }
 
 /* ── Picker ── */
@@ -375,11 +381,6 @@ body.dragging-tile .orbit-cell-strikes {
 
 .orbit-option:active {
   cursor: grabbing;
-}
-
-.orbit-option.struck {
-  text-decoration: line-through;
-  border-color: #b85a5a;
 }
 
 .orbit-option.placed {

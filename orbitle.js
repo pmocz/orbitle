@@ -442,7 +442,7 @@ let strikes = {
   atmosphere: [new Set(), new Set(), new Set(), new Set()],
   moons:      [new Set(), new Set(), new Set(), new Set()],
 };
-let selected = { cat: null, slot: null };
+let selected = { cat: null, slot: null, mode: "place" };
 let status = "playing"; // playing | won | done
 let showHelp = false;
 let crossedClues = new Set();
@@ -475,7 +475,13 @@ function checkWin(b) {
 // ============================================================
 function handleCellClick(cat, slot) {
   if (status !== "playing") return;
-  selected = { cat: null, slot };
+  selected = { cat: null, slot, mode: "place" };
+  render();
+}
+
+function handleStrikeSelect(slot) {
+  if (status !== "playing") return;
+  selected = { cat: null, slot, mode: "strike" };
   render();
 }
 
@@ -488,6 +494,9 @@ function placeValue(cat, slot, valIdx) {
     next[cat][slot] = valIdx;
   }
   board = next;
+  const ns = new Set(strikes[cat][slot]);
+  ns.delete(valIdx);
+  strikes = { ...strikes, [cat]: strikes[cat].map((s, i) => i === slot ? ns : s) };
   checkWin(board);
 }
 
@@ -502,20 +511,24 @@ function handleValuePick(cat, valIdx) {
   const slot = selected.slot;
   if (slot === null) return;
 
-  placeValue(cat, slot, valIdx);
+  if (selected.mode === "strike") {
+    toggleStrike(cat, slot, valIdx);
+  } else {
+    placeValue(cat, slot, valIdx);
+  }
   render();
 }
 
 function handleTileDrop(cat, slot, valIdx) {
   if (status !== "playing") return;
-  selected = { cat, slot };
+  selected = { cat: null, slot, mode: "place" };
   placeValue(cat, slot, valIdx);
   render();
 }
 
 function handleTileStrikeDrop(cat, slot, valIdx) {
   if (status !== "playing") return;
-  selected = { cat, slot };
+  selected = { cat: null, slot, mode: "strike" };
   toggleStrike(cat, slot, valIdx);
   render();
 }
@@ -523,7 +536,7 @@ function handleTileStrikeDrop(cat, slot, valIdx) {
 function handleRemoveValue(cat, slot) {
   if (status !== "playing") return;
   board = { ...board, [cat]: board[cat].map((v, i) => i === slot ? null : v) };
-  selected = { cat: null, slot };
+  selected = { cat: null, slot, mode: "place" };
   render();
 }
 
@@ -540,7 +553,7 @@ function handleClear() {
     atmosphere: [new Set(), new Set(), new Set(), new Set()],
     moons:      [new Set(), new Set(), new Set(), new Set()],
   };
-  selected = { cat: null, slot: null };
+  selected = { cat: null, slot: null, mode: "place" };
   status = "playing";
   crossedClues = new Set();
   render();
@@ -561,7 +574,7 @@ function handleNew() {
     atmosphere: [new Set(), new Set(), new Set(), new Set()],
     moons:      [new Set(), new Set(), new Set(), new Set()],
   };
-  selected = { cat: null, slot: null };
+  selected = { cat: null, slot: null, mode: "place" };
   crossedClues = new Set();
   render();
   setTimeout(() => { puzzle = generatePuzzleWithRetry(); loading = false; render(); }, 50);
@@ -633,7 +646,7 @@ function render() {
 
   // Header
   h += `<header class="orbit-header">
-    <h1 class="orbit-title">Orbit</h1>
+    <h1 class="orbit-title">Orbitle</h1>
     <div class="orbit-subtitle">A puzzle of celestial deduction</div>
     <div class="orbit-divider"></div>
     <button class="orbit-help-link" data-action="toggle-help">${showHelp ? "Hide" : "How to play"}</button>
@@ -644,7 +657,7 @@ function render() {
       Four orbits surround a star. Each orbit holds a unique <strong>color</strong>, <strong>planet</strong>,
       <strong>atmosphere</strong>, and <strong>moon count</strong>. Use the clues to deduce which attributes
       belong to which orbit. Every puzzle has exactly one solution reachable by pure logic — no guessing required.
-      Select an orbit column and tap tiles to place them, or drag tiles into a column. Drag onto the red strike strip below a column to rule a value out.
+      Select an orbit column and tap tiles to place them. Select a Strike box and tap tiles to rule them out.
       Tap any clue to cross it off once you've used it.
     </div>`;
   }
@@ -686,9 +699,9 @@ function render() {
     }
     h += `</div>`;
 
-    h += `<div class="orbit-column-strikes" aria-hidden="true">`;
+    h += `<div class="orbit-column-strikes">`;
     for (let slot = 0; slot < 4; slot++) {
-      h += `<div class="orbit-strike-drop" data-strike-column="true" data-slot="${slot}">Strike</div>`;
+      h += `<div class="orbit-strike-drop${selected.slot === slot && selected.mode === "strike" ? " selected" : ""}" data-action="select-strike" data-strike-column="true" data-slot="${slot}">Strike</div>`;
     }
     h += `</div>`;
     h += `</div>`; // end board
@@ -700,9 +713,8 @@ function render() {
       h += `<div class="orbit-options">`;
       cat.values.forEach((_, vi) => {
         const canPick = selected.slot !== null;
-        const struck = canPick && effectiveStrikes(cat.key, selected.slot).has(vi);
         const placed = tileIsPlaced(cat.key, vi);
-        h += `<button class="orbit-option${struck ? " struck" : ""}${placed ? " placed" : ""}${canPick ? "" : " muted"}" data-action="pick-value" data-cat="${cat.key}" data-val="${vi}" draggable="false">${optionHTML(cat.key, vi)}</button>`;
+        h += `<button class="orbit-option${placed ? " placed" : ""}${canPick ? "" : " muted"}" data-action="pick-value" data-cat="${cat.key}" data-val="${vi}" draggable="false">${optionHTML(cat.key, vi)}</button>`;
       });
       h += `</div>`;
     });
@@ -764,6 +776,7 @@ document.addEventListener("click", e => {
     }
     case "cell":       handleCellClick(el.dataset.cat, parseInt(el.dataset.slot)); break;
     case "select-column": handleCellClick(null, parseInt(el.dataset.slot)); break;
+    case "select-strike": handleStrikeSelect(parseInt(el.dataset.slot)); break;
     case "pick-value": handleValuePick(el.dataset.cat, parseInt(el.dataset.val)); break;
     case "remove-value": handleRemoveValue(el.dataset.cat, parseInt(el.dataset.slot)); break;
     case "clear":      handleClear(); break;
