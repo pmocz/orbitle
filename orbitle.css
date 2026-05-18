@@ -1,0 +1,415 @@
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=JetBrains+Mono:wght@300;400;500;700&display=swap');
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body, html {
+  background: #06080f;
+  color: #e0e6f0;
+  font-family: 'JetBrains Mono', monospace;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+.orbit-root {
+  position: relative;
+  z-index: 1;
+  min-height: 100vh;
+  padding: 1.5rem 1rem 4rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* ── Header ── */
+.orbit-header {
+  text-align: center;
+  margin-bottom: 1.5rem;
+}
+
+.orbit-title {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: clamp(2.5rem, 7vw, 4rem);
+  font-weight: 500;
+  font-style: italic;
+  letter-spacing: 0.02em;
+  line-height: 1;
+  background: linear-gradient(180deg, #e0e6f0 0%, #6b8cb8 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.orbit-subtitle {
+  font-size: 0.6rem;
+  letter-spacing: 0.4em;
+  text-transform: uppercase;
+  color: #5a6a85;
+  font-weight: 300;
+  margin-top: 0.4rem;
+}
+
+.orbit-divider {
+  width: 50px;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, #6b8cb8, transparent);
+  margin: 0.8rem auto;
+}
+
+/* ── Help ── */
+.orbit-help-link {
+  background: none;
+  border: none;
+  color: #5a6a85;
+  font-size: 0.6rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  cursor: pointer;
+  font-family: 'JetBrains Mono', monospace;
+  margin-top: 0.5rem;
+}
+
+.orbit-help-link:hover { color: #d4a64a; }
+
+.orbit-help-content {
+  max-width: 600px;
+  width: 100%;
+  padding: 1.2rem;
+  border: 1px solid #1a2238;
+  border-radius: 6px;
+  background: rgba(12, 16, 28, 0.85);
+  margin-bottom: 1.2rem;
+  font-size: 0.78rem;
+  line-height: 1.6;
+  color: #c0c8d8;
+}
+
+.orbit-help-content strong { color: #d4a64a; }
+
+/* ── Loading ── */
+.orbit-loading {
+  font-family: 'Cormorant Garamond', serif;
+  font-style: italic;
+  color: #6b8cb8;
+  padding: 4rem 0;
+  font-size: 1.1rem;
+  letter-spacing: 0.05em;
+}
+
+/* ── Clues ── */
+.orbit-clues {
+  width: 100%;
+  max-width: 600px;
+  padding: 1rem 1.2rem;
+  border: 1px solid #1a2238;
+  border-radius: 6px;
+  background: rgba(12, 16, 28, 0.7);
+  backdrop-filter: blur(8px);
+  margin-bottom: 1.2rem;
+}
+
+.orbit-clues-header {
+  font-family: 'Cormorant Garamond', serif;
+  font-style: italic;
+  font-size: 0.95rem;
+  color: #6b8cb8;
+  margin-bottom: 0.6rem;
+  letter-spacing: 0.05em;
+}
+
+.orbit-clue {
+  font-size: 0.8rem;
+  line-height: 1.5;
+  color: #c0c8d8;
+  padding: 0.3rem 0 0.3rem 1.1rem;
+  position: relative;
+  cursor: pointer;
+  transition: all 0.18s ease;
+  user-select: none;
+  border-radius: 3px;
+}
+
+.orbit-clue:hover { color: #e0e6f0; background: rgba(40, 50, 80, 0.25); }
+
+.orbit-clue::before {
+  content: "◇";
+  position: absolute;
+  left: 0;
+  color: #6b8cb8;
+  font-size: 0.7rem;
+  top: 0.45rem;
+}
+
+.orbit-clue.crossed {
+  color: #4a5468;
+  text-decoration: line-through;
+  text-decoration-color: #6b8cb8;
+  text-decoration-thickness: 1px;
+}
+
+.orbit-clue.crossed::before { color: #2a3550; }
+.orbit-clue.crossed:hover { color: #5a6478; }
+
+/* ── Board ── */
+.orbit-board {
+  width: 100%;
+  max-width: 600px;
+  margin-bottom: 1rem;
+  padding: 1rem;
+  border: 1px solid #1a2238;
+  border-radius: 6px;
+  background: rgba(12, 16, 28, 0.7);
+  backdrop-filter: blur(8px);
+}
+
+.orbit-header-row {
+  display: grid;
+  grid-template-columns: 80px repeat(4, 1fr);
+  gap: 0.4rem;
+  margin-bottom: 0.6rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid #1a2238;
+}
+
+.orbit-header-cell {
+  font-size: 0.6rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: #5a6a85;
+  text-align: center;
+  font-weight: 400;
+}
+
+.orbit-row {
+  display: grid;
+  grid-template-columns: 80px repeat(4, 1fr);
+  gap: 0.4rem;
+  margin-bottom: 0.4rem;
+}
+
+.orbit-row:last-child { margin-bottom: 0; }
+
+.orbit-row-label {
+  display: flex;
+  align-items: center;
+  font-size: 0.65rem;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: #6b8cb8;
+  font-weight: 500;
+}
+
+.orbit-cell {
+  padding: 0.55rem 0.3rem;
+  border: 1px solid #2a3550;
+  border-radius: 3px;
+  background: rgba(20, 26, 44, 0.6);
+  cursor: pointer;
+  transition: all 0.15s;
+  min-height: 40px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.78rem;
+  color: #e0e6f0;
+  position: relative;
+}
+
+.orbit-cell:hover { border-color: #6b8cb8; background: rgba(40, 50, 80, 0.6); }
+
+.orbit-cell.selected {
+  border-color: #d4a64a;
+  background: rgba(60, 50, 30, 0.5);
+  box-shadow: 0 0 12px rgba(212, 166, 74, 0.25);
+}
+
+.orbit-cell.empty { color: #3a4560; }
+
+.orbit-cell-strikes {
+  position: absolute;
+  bottom: 2px;
+  left: 2px;
+  right: 2px;
+  font-size: 0.55rem;
+  color: #6a4848;
+  line-height: 1;
+  text-align: center;
+  letter-spacing: 0.05em;
+}
+
+/* ── Picker ── */
+.orbit-picker {
+  width: 100%;
+  max-width: 600px;
+  padding: 0.9rem 1rem;
+  border: 1px solid #1a2238;
+  border-radius: 6px;
+  background: rgba(12, 16, 28, 0.85);
+  backdrop-filter: blur(8px);
+  margin-bottom: 0.8rem;
+}
+
+.orbit-picker-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.6rem;
+  font-size: 0.65rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: #5a6a85;
+}
+
+.orbit-picker-target {
+  color: #d4a64a;
+  font-family: 'Cormorant Garamond', serif;
+  font-style: italic;
+  font-size: 0.95rem;
+  letter-spacing: 0.02em;
+  text-transform: none;
+}
+
+.orbit-mode-toggle {
+  display: flex;
+  gap: 0.3rem;
+  background: rgba(20, 26, 44, 0.6);
+  border-radius: 3px;
+  padding: 2px;
+}
+
+.orbit-mode-btn {
+  padding: 0.3rem 0.6rem;
+  font-size: 0.55rem;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  background: transparent;
+  color: #5a6a85;
+  border: none;
+  cursor: pointer;
+  border-radius: 2px;
+  font-family: 'JetBrains Mono', monospace;
+}
+
+.orbit-mode-btn.active { background: #6b8cb8; color: #06080f; font-weight: 500; }
+.orbit-mode-btn.active.strike { background: #b85a5a; }
+
+.orbit-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.orbit-option {
+  padding: 0.5rem 0.8rem;
+  border: 1px solid #2a3550;
+  background: rgba(20, 26, 44, 0.6);
+  color: #e0e6f0;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.75rem;
+  cursor: pointer;
+  border-radius: 3px;
+  transition: all 0.15s;
+}
+
+.orbit-option:hover {
+  border-color: #6b8cb8;
+  background: rgba(40, 50, 80, 0.7);
+  transform: translateY(-1px);
+}
+
+.orbit-option.struck {
+  opacity: 0.4;
+  text-decoration: line-through;
+  border-color: #b85a5a;
+}
+
+.orbit-pick-hint {
+  font-family: 'Cormorant Garamond', serif;
+  font-style: italic;
+  font-size: 0.95rem;
+  color: #5a6a85;
+  padding: 0.5rem 0;
+}
+
+/* ── Actions ── */
+.orbit-actions {
+  display: flex;
+  gap: 0.5rem;
+  width: 100%;
+  max-width: 600px;
+}
+
+.orbit-btn {
+  flex: 1;
+  padding: 0.75rem;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.65rem;
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+  border: 1px solid #6b8cb8;
+  background: transparent;
+  color: #6b8cb8;
+  cursor: pointer;
+  border-radius: 3px;
+  transition: all 0.2s;
+  font-weight: 500;
+}
+
+.orbit-btn:hover { background: rgba(107, 140, 184, 0.1); }
+.orbit-btn.secondary { border-color: #2a3550; color: #5a6a85; }
+.orbit-btn.gold { border-color: #d4a64a; color: #d4a64a; }
+.orbit-btn.gold:hover { background: rgba(212, 166, 74, 0.1); }
+
+/* ── Win overlay ── */
+.orbit-reveal {
+  position: fixed;
+  inset: 0;
+  background: rgba(6, 8, 15, 0.92);
+  backdrop-filter: blur(12px);
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+  animation: fadeIn 0.6s ease-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+.orbit-reveal-card {
+  max-width: 460px;
+  width: 100%;
+  padding: 2.5rem 2rem;
+  border: 1px solid #d4a64a;
+  border-radius: 6px;
+  background: linear-gradient(180deg, rgba(20, 26, 44, 0.95), rgba(6, 8, 15, 0.95));
+  text-align: center;
+  box-shadow: 0 0 60px rgba(212, 166, 74, 0.2);
+}
+
+.orbit-reveal-sub {
+  font-size: 0.7rem;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: #6b8cb8;
+  margin-bottom: 1.5rem;
+}
+
+.orbit-reveal-title {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 2.2rem;
+  font-style: italic;
+  color: #d4a64a;
+  margin-bottom: 0.5rem;
+}
+
+/* ── Responsive ── */
+@media (max-width: 600px) {
+  .orbit-header-row, .orbit-row { grid-template-columns: 60px repeat(4, 1fr); }
+  .orbit-row-label, .orbit-header-cell { font-size: 0.55rem; }
+  .orbit-cell { font-size: 0.7rem; padding: 0.4rem 0.2rem; }
+  .orbit-clue { font-size: 0.75rem; }
+}
