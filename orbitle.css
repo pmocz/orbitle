@@ -247,6 +247,199 @@ body, html {
 
 .orbit-cell.empty { color: #3a4560; }
 
+.orbit-tile-content {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-width: 0;
+}
+
+.orbit-tile-icon {
+  width: 12px;
+  height: 12px;
+  display: inline-block;
+  flex-shrink: 0;
+  position: relative;
+}
+
+.orbit-cell .orbit-tile-icon {
+  width: 10px;
+  height: 10px;
+}
+
+.orbit-tile-icon.color {
+  border-radius: 50%;
+}
+
+.orbit-tile-icon.planet {
+  border: 1px solid #8fb4e8;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 32%, #d5e5fb 0 15%, #6f99d0 28%, #20375d 70%);
+  box-shadow: 0 0 8px rgba(111, 153, 208, 0.55);
+}
+
+.orbit-tile-icon.planet-rocky {
+  border-color: #b7aa92;
+  background: radial-gradient(circle at 35% 32%, #e3d7bd 0 15%, #8f8068 30%, #3c342d 72%);
+  box-shadow: 0 0 8px rgba(183, 170, 146, 0.42);
+}
+
+.orbit-tile-icon.planet-ocean {
+  border-color: #72c7db;
+  background: radial-gradient(circle at 35% 32%, #c8f2ff 0 15%, #238cb9 31%, #123f72 72%);
+  box-shadow: 0 0 8px rgba(72, 183, 220, 0.52);
+}
+
+.orbit-tile-icon.planet-ice {
+  border-color: #d8f4ff;
+  background: radial-gradient(circle at 35% 32%, #ffffff 0 16%, #bdeeff 34%, #6f92bf 74%);
+  box-shadow: 0 0 9px rgba(216, 244, 255, 0.55);
+}
+
+.orbit-tile-icon.planet-lava {
+  border-color: #ff9a4d;
+  background: radial-gradient(circle at 35% 32%, #ffd17a 0 14%, #e85a2e 32%, #3d1518 74%);
+  box-shadow: 0 0 10px rgba(232, 90, 46, 0.64);
+}
+
+.orbit-tile-icon.planet::before {
+  content: "";
+  position: absolute;
+  left: -3px;
+  right: -3px;
+  top: 4px;
+  height: 3px;
+  border-top: 1px solid rgba(212, 166, 74, 0.95);
+  border-radius: 50%;
+  transform: rotate(-18deg);
+}
+
+.orbit-tile-icon.atmosphere {
+  color: #b0eef8;
+  filter: drop-shadow(0 0 4px rgba(92, 198, 218, 0.42));
+}
+
+.orbit-tile-icon.atmosphere::before,
+.orbit-tile-icon.atmosphere::after {
+  content: "";
+  position: absolute;
+  display: block;
+}
+
+.orbit-tile-icon.atmosphere-o,
+.orbit-tile-icon.atmosphere-n,
+.orbit-tile-icon.atmosphere-h {
+  width: 14px;
+}
+
+.orbit-cell .orbit-tile-icon.atmosphere-o,
+.orbit-cell .orbit-tile-icon.atmosphere-n,
+.orbit-cell .orbit-tile-icon.atmosphere-h {
+  width: 12px;
+}
+
+.orbit-tile-icon.atmosphere-o {
+  color: #ff6b6b;
+  background:
+    radial-gradient(circle at 24% 50%, #ff6b6b 0 2.3px, transparent 2.5px),
+    radial-gradient(circle at 76% 50%, #ff6b6b 0 2.3px, transparent 2.5px);
+}
+
+.orbit-tile-icon.atmosphere-n {
+  color: #78a8ff;
+  background:
+    radial-gradient(circle at 24% 50%, #78a8ff 0 2.3px, transparent 2.5px),
+    radial-gradient(circle at 76% 50%, #78a8ff 0 2.3px, transparent 2.5px);
+}
+
+.orbit-tile-icon.atmosphere-h {
+  color: #f5f7fb;
+  background:
+    radial-gradient(circle at 26% 50%, #f5f7fb 0 1.9px, transparent 2.1px),
+    radial-gradient(circle at 74% 50%, #f5f7fb 0 1.9px, transparent 2.1px);
+}
+
+.orbit-tile-icon.atmosphere-o::before,
+.orbit-tile-icon.atmosphere-n::before,
+.orbit-tile-icon.atmosphere-h::before {
+  left: 25%;
+  right: 25%;
+  top: 50%;
+  height: 1px;
+  background: currentColor;
+  opacity: 0.78;
+  transform: translateY(-50%);
+}
+
+.orbit-tile-icon.atmosphere-o::after,
+.orbit-tile-icon.atmosphere-n::after,
+.orbit-tile-icon.atmosphere-h::after {
+  display: none;
+}
+
+.orbit-tile-icon.atmosphere-ch {
+  background:
+    radial-gradient(circle at 50% 50%, #737f91 0 2.4px, transparent 2.6px),
+    radial-gradient(circle at 50% 12%, #e0e6f0 0 1.5px, transparent 1.7px),
+    radial-gradient(circle at 50% 88%, #e0e6f0 0 1.5px, transparent 1.7px),
+    radial-gradient(circle at 12% 50%, #e0e6f0 0 1.5px, transparent 1.7px),
+    radial-gradient(circle at 88% 50%, #e0e6f0 0 1.5px, transparent 1.7px);
+}
+
+.orbit-tile-icon.atmosphere-ch::before,
+.orbit-tile-icon.atmosphere-ch::after {
+  left: 50%;
+  top: 50%;
+  width: 1px;
+  height: 12px;
+  background: rgba(176, 238, 248, 0.7);
+  transform-origin: center;
+}
+
+.orbit-tile-icon.atmosphere-ch::before {
+  transform: translate(-50%, -50%);
+}
+
+.orbit-tile-icon.atmosphere-ch::after {
+  transform: translate(-50%, -50%) rotate(90deg);
+}
+
+.orbit-tile-icon.moons {
+  width: 16px;
+  border: 1px solid rgba(143, 163, 196, 0.78);
+  border-radius: 50%;
+  background: none;
+  filter: drop-shadow(0 0 4px rgba(143, 163, 196, 0.38));
+}
+
+.orbit-cell .orbit-tile-icon.moons {
+  width: 14px;
+}
+
+.orbit-tile-icon.moons::before,
+.orbit-tile-icon.moons::after {
+  display: none;
+}
+
+.orbit-tile-icon.moons-1 {
+  background:
+    radial-gradient(circle at 50% 8%, #d7deea 0 2.3px, transparent 2.5px);
+}
+
+.orbit-tile-icon.moons-2 {
+  background:
+    radial-gradient(circle at 8% 50%, #d7deea 0 2.3px, transparent 2.5px),
+    radial-gradient(circle at 92% 50%, #8fa3c4 0 2.3px, transparent 2.5px);
+}
+
+.orbit-tile-icon.moons-3 {
+  background:
+    radial-gradient(circle at 50% 8%, #d7deea 0 2.2px, transparent 2.4px),
+    radial-gradient(circle at 12% 78%, #8fa3c4 0 2.2px, transparent 2.4px),
+    radial-gradient(circle at 88% 78%, #6b8cb8 0 2.2px, transparent 2.4px);
+}
+
 .orbit-cell-remove {
   position: absolute;
   top: 2px;

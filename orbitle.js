@@ -610,25 +610,36 @@ function clueTextHTML(text) {
   );
 }
 
-function cellContentHTML(cat, v) {
+function tileIconHTML(cat, valIdx) {
   if (cat === "color") {
-    const hex = COLOR_HEX[COLORS[v]];
-    return `<div style="display:flex;align-items:center;gap:6px"><span style="width:10px;height:10px;border-radius:50%;background:${hex};box-shadow:0 0 8px ${hex};display:inline-block;flex-shrink:0"></span><span>${COLOR_SHORT[v]}</span></div>`;
+    const hex = COLOR_HEX[COLORS[valIdx]];
+    return `<span class="orbit-tile-icon color" style="background:${hex};box-shadow:0 0 10px ${hex}"></span>`;
   }
-  if (cat === "atmosphere") return ATMOSPHERE_SHORT[v];
-  if (cat === "planet") return PLANET_SHORT[v];
-  if (cat === "moons") return String(MOONS[v]);
+  if (cat === "planet") {
+    return `<span class="orbit-tile-icon planet planet-${escHTML(String(PLANETS[valIdx]).toLowerCase())}"></span>`;
+  }
+  if (cat === "atmosphere") {
+    return `<span class="orbit-tile-icon atmosphere atmosphere-${escHTML(String(ATMOSPHERE_SHORT[valIdx]).replace(/[₀-₉]/g, "").toLowerCase())}"></span>`;
+  }
+  if (cat === "moons") {
+    return `<span class="orbit-tile-icon moons moons-${escHTML(String(MOONS[valIdx]))}"></span>`;
+  }
+  return `<span class="orbit-tile-icon ${escHTML(cat)}"></span>`;
+}
+
+function cellContentHTML(cat, v) {
+  if (cat === "color") return `<div class="orbit-tile-content">${tileIconHTML(cat, v)}<span>${COLOR_SHORT[v]}</span></div>`;
+  if (cat === "atmosphere") return `<div class="orbit-tile-content">${tileIconHTML(cat, v)}<span>${ATMOSPHERE_SHORT[v]}</span></div>`;
+  if (cat === "planet") return `<div class="orbit-tile-content">${tileIconHTML(cat, v)}<span>${PLANET_SHORT[v]}</span></div>`;
+  if (cat === "moons") return `<div class="orbit-tile-content">${tileIconHTML(cat, v)}<span>${MOONS[v]}</span></div>`;
   return "";
 }
 
 function optionHTML(cat, vi) {
-  if (cat === "color") {
-    const hex = COLOR_HEX[COLORS[vi]];
-    return `<div style="display:flex;align-items:center;gap:6px"><span style="width:12px;height:12px;border-radius:50%;background:${hex};box-shadow:0 0 10px ${hex};display:inline-block;flex-shrink:0"></span>${escHTML(COLORS[vi])}</div>`;
-  }
-  if (cat === "atmosphere") return escHTML(ATMOSPHERES[vi]);
-  if (cat === "planet") return escHTML(PLANETS[vi]);
-  if (cat === "moons") return `${MOONS[vi]} moon${MOONS[vi] === 1 ? "" : "s"}`;
+  if (cat === "color") return `<div class="orbit-tile-content">${tileIconHTML(cat, vi)}<span>${escHTML(COLORS[vi])}</span></div>`;
+  if (cat === "atmosphere") return `<div class="orbit-tile-content">${tileIconHTML(cat, vi)}<span>${escHTML(ATMOSPHERES[vi])}</span></div>`;
+  if (cat === "planet") return `<div class="orbit-tile-content">${tileIconHTML(cat, vi)}<span>${escHTML(PLANETS[vi])}</span></div>`;
+  if (cat === "moons") return `<div class="orbit-tile-content">${tileIconHTML(cat, vi)}<span>${MOONS[vi]} moon${MOONS[vi] === 1 ? "" : "s"}</span></div>`;
   return "?";
 }
 
