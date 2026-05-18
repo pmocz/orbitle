@@ -447,7 +447,7 @@ let status = "playing"; // playing | won | done
 let showHelp = false;
 let crossedClues = new Set();
 let pointerDrag = null;
-let suppressNextClick = false;
+let suppressNextClick = null;
 
 // ============================================================
 // HELPERS
@@ -751,10 +751,14 @@ function render() {
 // ============================================================
 document.addEventListener("click", e => {
   if (suppressNextClick) {
-    suppressNextClick = false;
-    e.preventDefault();
-    e.stopPropagation();
-    return;
+    const { x, y, until } = suppressNextClick;
+    const closeToDrop = Math.hypot(e.clientX - x, e.clientY - y) < 12;
+    suppressNextClick = null;
+    if (Date.now() < until && closeToDrop) {
+      e.preventDefault();
+      e.stopPropagation();
+      return;
+    }
   }
 
   if (status === "won") {
@@ -884,7 +888,7 @@ document.addEventListener("pointerup", e => {
   if (!pointerDrag || pointerDrag.pointerId !== e.pointerId) return;
   if (pointerDrag.dragging) {
     finishPointerTileDrag(e.clientX, e.clientY);
-    suppressNextClick = true;
+    suppressNextClick = { x: e.clientX, y: e.clientY, until: Date.now() + 350 };
   }
   pointerDrag = null;
   document.body.classList.remove("dragging-tile");
