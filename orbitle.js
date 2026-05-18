@@ -58,11 +58,20 @@ function labelFor(cat, valIdx) {
 // ============================================================
 // CLUE FACTORIES
 // ============================================================
+function clueAtSlot(sol, cat, slot) {
+  const valIdx = valAt(sol, cat, slot);
+  return {
+    text: `The ${labelFor(cat, valIdx)} is in orbit ${slot + 1}.`,
+    test: (s) => s[cat][slot] === valIdx,
+    weight: 4,
+    anchor: true
+  };
+}
+
 function clueAtPosition(sol) {
   const cat = CATEGORIES[Math.floor(Math.random() * 4)].key;
   const slot = Math.floor(Math.random() * 4);
-  const valIdx = valAt(sol, cat, slot);
-  return { text: `The ${labelFor(cat, valIdx)} is in orbit ${slot + 1}.`, test: (s) => s[cat][slot] === valIdx, weight: 4 };
+  return clueAtSlot(sol, cat, slot);
 }
 
 function cluePaired(sol) {
@@ -178,6 +187,42 @@ function clueNotAtPosition(sol) {
   const otherSlots = [0, 1, 2, 3].filter((s) => s !== trueSlot);
   const slot = otherSlots[Math.floor(Math.random() * otherSlots.length)];
   return { text: `The ${labelFor(cat, v)} is not in orbit ${slot + 1}.`, test: (s) => slotOf(s, cat, v) !== slot, weight: 1 };
+}
+
+function clueOneOfTwoOrbits(sol) {
+  const cat = CATEGORIES[Math.floor(Math.random() * 4)].key;
+  const v = Math.floor(Math.random() * 4);
+  const trueSlot = slotOf(sol, cat, v);
+  const otherSlots = [0, 1, 2, 3].filter((s) => s !== trueSlot);
+  const otherSlot = otherSlots[Math.floor(Math.random() * otherSlots.length)];
+  const options = [trueSlot, otherSlot].sort((a, b) => a - b);
+  return {
+    text: `The ${labelFor(cat, v)} is in orbit ${options[0] + 1} or orbit ${options[1] + 1}.`,
+    test: (s) => options.includes(slotOf(s, cat, v)),
+    weight: 2
+  };
+}
+
+function clueInwardOrOutwardOfOrbit(sol) {
+  const cat = CATEGORIES[Math.floor(Math.random() * 4)].key;
+  const v = Math.floor(Math.random() * 4);
+  const trueSlot = slotOf(sol, cat, v);
+  const inwardChoices = [2, 3, 4].filter((orbit) => trueSlot < orbit - 1);
+  const outwardChoices = [1, 2, 3].filter((orbit) => trueSlot > orbit - 1);
+  if (inwardChoices.length === 0) {
+    const orbit = outwardChoices[Math.floor(Math.random() * outwardChoices.length)];
+    return { text: `The ${labelFor(cat, v)} orbits outward of orbit ${orbit}.`, test: (s) => slotOf(s, cat, v) > orbit - 1, weight: 2 };
+  }
+  if (outwardChoices.length === 0) {
+    const orbit = inwardChoices[Math.floor(Math.random() * inwardChoices.length)];
+    return { text: `The ${labelFor(cat, v)} orbits inward of orbit ${orbit}.`, test: (s) => slotOf(s, cat, v) < orbit - 1, weight: 2 };
+  }
+  if (Math.random() < 0.5) {
+    const orbit = inwardChoices[Math.floor(Math.random() * inwardChoices.length)];
+    return { text: `The ${labelFor(cat, v)} orbits inward of orbit ${orbit}.`, test: (s) => slotOf(s, cat, v) < orbit - 1, weight: 2 };
+  }
+  const orbit = outwardChoices[Math.floor(Math.random() * outwardChoices.length)];
+  return { text: `The ${labelFor(cat, v)} orbits outward of orbit ${orbit}.`, test: (s) => slotOf(s, cat, v) > orbit - 1, weight: 2 };
 }
 
 function cluePairedMoonsParity(sol) {
@@ -296,15 +341,11 @@ function clueDifferentHalves(sol) {
 }
 
 const CLUE_FACTORIES = [
-  clueAtPosition, clueExactMoons,
-  clueNotAtPosition, clueNotAtPosition, clueNotPaired, clueNotAdjacent,
-  cluePaired, cluePaired,
-  clueImmediatelyLeft, clueImmediatelyLeft, clueLeftOf, clueLeftOf,
-  clueAdjacent, clueAdjacent, clueOneBetween,
-  clueBetween, clueBetween, clueHalf, clueHalf, clueExtremesOrMiddle, clueDifferentHalves,
-  clueMoreMoonsThan, clueMoreMoonsThan, clueMoonDifference, clueMoonDifference,
-  cluePairedMoonsParity, cluePairedMoonsParity, clueMoonsBound, clueMoonsBound,
-  clueDisjunction, clueDisjunction,
+  clueAtPosition, clueAtPosition, clueAtPosition, clueAtPosition,
+  clueNotAtPosition, clueNotAtPosition, clueNotAtPosition,
+  clueOneOfTwoOrbits, clueOneOfTwoOrbits, clueOneOfTwoOrbits,
+  clueHalf, clueHalf, clueExtremesOrMiddle, clueInwardOrOutwardOfOrbit,
+  clueImmediatelyLeft, clueLeftOf, clueAdjacent, clueOneBetween, clueBetween,
 ];
 
 // ============================================================
@@ -333,6 +374,10 @@ function countSolutionsFast(clues, capAt = 2) {
 function generatePuzzle() {
   const solution = { color: shuffle([0,1,2,3]), planet: shuffle([0,1,2,3]), atmosphere: shuffle([0,1,2,3]), moons: shuffle([0,1,2,3]) };
   const pool = [];
+  const seedClues = shuffle(CATEGORIES)
+    .slice(0, 3)
+    .map(cat => clueAtSlot(solution, cat.key, Math.floor(Math.random() * 4)));
+  pool.push(...seedClues);
   for (let i = 0; i < 160; i++) {
     const factory = CLUE_FACTORIES[Math.floor(Math.random() * CLUE_FACTORIES.length)];
     const clue = factory(solution);
@@ -340,9 +385,10 @@ function generatePuzzle() {
   }
   const seen = new Set();
   const uniquePool = pool.filter(c => { if (seen.has(c.text)) return false; seen.add(c.text); return true; });
-  const remaining = shuffle(uniquePool);
-  const chosen = [];
-  let curCount = ALL_PERMS_4.length ** 4;
+  const chosen = seedClues.filter(c => seen.has(c.text));
+  const chosenTexts = new Set(chosen.map(c => c.text));
+  const remaining = shuffle(uniquePool.filter(c => !chosenTexts.has(c.text)));
+  let curCount = countSolutionsFast(chosen, ALL_PERMS_4.length ** 4);
   while (curCount > 1 && chosen.length < 14 && remaining.length > 0) {
     let pickedIdx = -1, pickedCount = curCount;
     const halfTarget = Math.max(1, Math.floor(curCount / 2));
@@ -366,6 +412,7 @@ function generatePuzzle() {
   while (changed) {
     changed = false;
     for (let i = 0; i < minimal.length; i++) {
+      if (minimal[i].anchor && minimal.filter(c => c.anchor).length <= 3) continue;
       const without = minimal.filter((_, j) => j !== i);
       if (countSolutionsFast(without, 2) === 1) { minimal = without; changed = true; break; }
     }
@@ -397,9 +444,11 @@ let strikes = {
 };
 let selected = { cat: null, slot: null };
 let status = "playing"; // playing | won | done
-let mode = "place";     // place | strike
 let showHelp = false;
 let crossedClues = new Set();
+let draggedTile = null;
+let pointerDrag = null;
+let suppressNextClick = false;
 
 // ============================================================
 // HELPERS
@@ -426,30 +475,55 @@ function checkWin(b) {
 // ============================================================
 function handleCellClick(cat, slot) {
   if (status !== "playing") return;
-  selected = { cat, slot };
+  selected = { cat: null, slot };
   render();
 }
 
-function handleValuePick(valIdx) {
-  if (status !== "playing") return;
-  const { cat, slot } = selected;
-  if (cat === null) return;
-
-  if (mode === "place") {
-    const next = { ...board, [cat]: [...board[cat]] };
-    if (next[cat][slot] === valIdx) {
-      next[cat][slot] = null;
-    } else {
-      for (let i = 0; i < 4; i++) { if (next[cat][i] === valIdx) next[cat][i] = null; }
-      next[cat][slot] = valIdx;
-    }
-    board = next;
-    checkWin(board);
+function placeValue(cat, slot, valIdx) {
+  const next = { ...board, [cat]: [...board[cat]] };
+  if (next[cat][slot] === valIdx) {
+    next[cat][slot] = null;
   } else {
-    const ns = new Set(strikes[cat][slot]);
-    ns.has(valIdx) ? ns.delete(valIdx) : ns.add(valIdx);
-    strikes = { ...strikes, [cat]: strikes[cat].map((s, i) => i === slot ? ns : s) };
+    for (let i = 0; i < 4; i++) { if (next[cat][i] === valIdx) next[cat][i] = null; }
+    next[cat][slot] = valIdx;
   }
+  board = next;
+  checkWin(board);
+}
+
+function toggleStrike(cat, slot, valIdx) {
+  const ns = new Set(strikes[cat][slot]);
+  ns.has(valIdx) ? ns.delete(valIdx) : ns.add(valIdx);
+  strikes = { ...strikes, [cat]: strikes[cat].map((s, i) => i === slot ? ns : s) };
+}
+
+function handleValuePick(cat, valIdx) {
+  if (status !== "playing") return;
+  const slot = selected.slot;
+  if (slot === null) return;
+
+  placeValue(cat, slot, valIdx);
+  render();
+}
+
+function handleTileDrop(cat, slot, valIdx) {
+  if (status !== "playing") return;
+  selected = { cat, slot };
+  placeValue(cat, slot, valIdx);
+  render();
+}
+
+function handleTileStrikeDrop(cat, slot, valIdx) {
+  if (status !== "playing") return;
+  selected = { cat, slot };
+  toggleStrike(cat, slot, valIdx);
+  render();
+}
+
+function handleRemoveValue(cat, slot) {
+  if (status !== "playing") return;
+  board = { ...board, [cat]: board[cat].map((v, i) => i === slot ? null : v) };
+  selected = { cat: null, slot };
   render();
 }
 
@@ -545,6 +619,10 @@ function optionHTML(cat, vi) {
   return "?";
 }
 
+function tileIsPlaced(cat, vi) {
+  return board[cat].includes(vi);
+}
+
 // ============================================================
 // RENDER
 // ============================================================
@@ -566,7 +644,7 @@ function render() {
       Four orbits surround a star. Each orbit holds a unique <strong>color</strong>, <strong>planet</strong>,
       <strong>atmosphere</strong>, and <strong>moon count</strong>. Use the clues to deduce which attributes
       belong to which orbit. Every puzzle has exactly one solution reachable by pure logic — no guessing required.
-      Tap a cell, then pick a value. Use <strong>Strike</strong> mode to mark values you've ruled out for that cell.
+      Select an orbit column and tap tiles to place them, or drag tiles into a column. Drag onto the red strike strip below a column to rule a value out.
       Tap any clue to cross it off once you've used it.
     </div>`;
   }
@@ -585,6 +663,13 @@ function render() {
 
     // Board
     h += `<div class="orbit-board">`;
+    h += `<div class="orbit-column-bands" aria-hidden="true">
+      <div></div>
+      <div class="orbit-column-band"></div>
+      <div class="orbit-column-band"></div>
+      <div class="orbit-column-band"></div>
+      <div class="orbit-column-band"></div>
+    </div>`;
     h += `<div class="orbit-header-row">
       <div></div>
       <div class="orbit-header-cell">Orbit 1</div>
@@ -597,10 +682,13 @@ function render() {
       h += `<div class="orbit-row"><div class="orbit-row-label">${cat.label}</div>`;
       for (let slot = 0; slot < 4; slot++) {
         const v = board[cat.key][slot];
-        const isSel = selected.cat === cat.key && selected.slot === slot;
+        const isSel = selected.slot === slot;
         const cs = effectiveStrikes(cat.key, slot);
-        h += `<div class="orbit-cell${isSel ? " selected" : ""}${v === null ? " empty" : ""}" data-action="cell" data-cat="${cat.key}" data-slot="${slot}">`;
+        h += `<div class="orbit-cell${isSel ? " selected" : ""}${v === null ? " empty" : ""}" data-action="cell" data-cat="${cat.key}" data-slot="${slot}" data-drop-cell="true">`;
         h += v !== null ? cellContentHTML(cat.key, v) : `·`;
+        if (v !== null) {
+          h += `<button class="orbit-cell-remove" data-action="remove-value" data-cat="${cat.key}" data-slot="${slot}" aria-label="Remove ${escHTML(cat.label)} from orbit ${slot + 1}">×</button>`;
+        }
         if (cs.size > 0 && v === null) {
           h += `<div class="orbit-cell-strikes">&#x2717;${[...cs].map(vi => escHTML(cat.short[vi])).join(",")}</div>`;
         }
@@ -608,33 +696,29 @@ function render() {
       }
       h += `</div>`;
     });
+
+    h += `<div class="orbit-column-strikes" aria-hidden="true">`;
+    h += `<div></div>`;
+    for (let slot = 0; slot < 4; slot++) {
+      h += `<div class="orbit-strike-drop" data-strike-column="true" data-slot="${slot}">Strike</div>`;
+    }
+    h += `</div>`;
     h += `</div>`; // end board
 
-    // Picker
+    // Tile tray
     h += `<div class="orbit-picker">`;
-    h += `<div class="orbit-picker-header">`;
-    if (selected.cat) {
-      h += `<span class="orbit-picker-target">${CATEGORIES.find(c => c.key === selected.cat).label} · Orbit ${selected.slot + 1}</span>`;
-    } else {
-      h += `<span>Select an orbit cell</span>`;
-    }
-    h += `<div class="orbit-mode-toggle">
-      <button class="orbit-mode-btn${mode === "place" ? " active" : ""}" data-action="set-mode" data-mode="place">Place</button>
-      <button class="orbit-mode-btn${mode === "strike" ? " active strike" : ""}" data-action="set-mode" data-mode="strike">Strike</button>
-    </div>`;
-    h += `</div>`; // end picker-header
-
-    if (selected.cat) {
-      const cat = CATEGORIES.find(c => c.key === selected.cat);
+    h += `<div class="orbit-tile-tray">`;
+    CATEGORIES.forEach(cat => {
       h += `<div class="orbit-options">`;
       cat.values.forEach((_, vi) => {
-        const struck = effectiveStrikes(selected.cat, selected.slot).has(vi);
-        h += `<button class="orbit-option${struck ? " struck" : ""}" data-action="pick-value" data-val="${vi}">${optionHTML(selected.cat, vi)}</button>`;
+        const canPick = selected.slot !== null;
+        const struck = canPick && effectiveStrikes(cat.key, selected.slot).has(vi);
+        const placed = tileIsPlaced(cat.key, vi);
+        h += `<button class="orbit-option${struck ? " struck" : ""}${placed ? " placed" : ""}${canPick ? "" : " muted"}" data-action="pick-value" data-cat="${cat.key}" data-val="${vi}" draggable="false">${optionHTML(cat.key, vi)}</button>`;
       });
       h += `</div>`;
-    } else {
-      h += `<div class="orbit-pick-hint">Tap a cell on the board to choose its value.</div>`;
-    }
+    });
+    h += `</div>`;
     h += `</div>`; // end picker
 
     // Actions
@@ -666,12 +750,20 @@ function render() {
 // CLICK DELEGATION
 // ============================================================
 document.addEventListener("click", e => {
+  if (suppressNextClick) {
+    suppressNextClick = false;
+    e.preventDefault();
+    e.stopPropagation();
+    return;
+  }
+
   if (status === "won") {
     if (!e.target.closest(".orbit-reveal-card")) { status = "done"; render(); return; }
   }
 
   const el = e.target.closest("[data-action]");
   if (!el) return;
+  if (el.dataset.action === "remove-value") e.stopPropagation();
   const action = el.dataset.action;
 
   switch (action) {
@@ -683,14 +775,194 @@ document.addEventListener("click", e => {
       crossedClues = n; render(); break;
     }
     case "cell":       handleCellClick(el.dataset.cat, parseInt(el.dataset.slot)); break;
-    case "set-mode":   mode = el.dataset.mode; render(); break;
-    case "pick-value": handleValuePick(parseInt(el.dataset.val)); break;
+    case "pick-value": handleValuePick(el.dataset.cat, parseInt(el.dataset.val)); break;
+    case "remove-value": handleRemoveValue(el.dataset.cat, parseInt(el.dataset.slot)); break;
     case "clear":      handleClear(); break;
     case "new-puzzle": handleNew(); break;
     case "dismiss-won":
       if (!e.target.closest(".orbit-reveal-card")) { status = "done"; render(); }
       break;
   }
+});
+
+function clearDragHighlights() {
+  document.querySelectorAll(".orbit-cell.drag-over").forEach(el => el.classList.remove("drag-over"));
+  document.querySelectorAll(".orbit-strike-drop.strike-over").forEach(el => el.classList.remove("strike-over"));
+}
+
+function showDragGhost(x, y, html) {
+  const ghost = document.getElementById("drag-ghost");
+  if (!ghost) return;
+  ghost.innerHTML = html;
+  ghost.style.display = "flex";
+  ghost.style.left = `${x}px`;
+  ghost.style.top = `${y}px`;
+}
+
+function moveDragGhost(x, y) {
+  const ghost = document.getElementById("drag-ghost");
+  if (!ghost) return;
+  ghost.style.left = `${x}px`;
+  ghost.style.top = `${y}px`;
+}
+
+function hideDragGhost() {
+  const ghost = document.getElementById("drag-ghost");
+  if (!ghost) return;
+  ghost.style.display = "none";
+  ghost.innerHTML = "";
+}
+
+function startPointerTileDrag(e, tile) {
+  pointerDrag = {
+    pointerId: e.pointerId,
+    startX: e.clientX,
+    startY: e.clientY,
+    dragging: false,
+    tileHTML: tile.innerHTML,
+    data: { cat: tile.dataset.cat, val: parseInt(tile.dataset.val) }
+  };
+  tile.setPointerCapture?.(e.pointerId);
+}
+
+function updatePointerDropTarget(x, y) {
+  clearDragHighlights();
+  const target = document.elementFromPoint(x, y);
+  const strike = target?.closest?.("[data-strike-column='true']");
+  if (strike) {
+    strike.classList.add("strike-over");
+    return;
+  }
+  const cell = target?.closest?.("[data-drop-cell='true']");
+  if (!cell) return;
+  document.querySelectorAll(`[data-drop-cell='true'][data-slot='${cell.dataset.slot}']`).forEach(el => el.classList.add("drag-over"));
+}
+
+function finishPointerTileDrag(x, y) {
+  if (!pointerDrag?.dragging) return;
+  const data = pointerDrag.data;
+  const target = document.elementFromPoint(x, y);
+  const strike = target?.closest?.("[data-strike-column='true']");
+  if (strike) {
+    handleTileStrikeDrop(data.cat, parseInt(strike.dataset.slot), data.val);
+    return;
+  }
+  const cell = target?.closest?.("[data-drop-cell='true']");
+  if (cell) handleTileDrop(data.cat, parseInt(cell.dataset.slot), data.val);
+}
+
+document.addEventListener("pointerdown", e => {
+  const tile = e.target.closest("[data-action='pick-value']");
+  if (!tile || status !== "playing") return;
+  if (e.button !== undefined && e.button !== 0) return;
+  startPointerTileDrag(e, tile);
+});
+
+document.addEventListener("pointermove", e => {
+  if (!pointerDrag || pointerDrag.pointerId !== e.pointerId) return;
+  const dx = e.clientX - pointerDrag.startX;
+  const dy = e.clientY - pointerDrag.startY;
+  if (!pointerDrag.dragging && Math.hypot(dx, dy) < 6) return;
+  if (!pointerDrag.dragging) {
+    pointerDrag.dragging = true;
+    draggedTile = pointerDrag.data;
+    document.body.classList.add("dragging-tile");
+    showDragGhost(e.clientX, e.clientY, pointerDrag.tileHTML);
+  } else {
+    moveDragGhost(e.clientX, e.clientY);
+  }
+  updatePointerDropTarget(e.clientX, e.clientY);
+  e.preventDefault();
+});
+
+document.addEventListener("pointerup", e => {
+  if (!pointerDrag || pointerDrag.pointerId !== e.pointerId) return;
+  if (pointerDrag.dragging) {
+    finishPointerTileDrag(e.clientX, e.clientY);
+    suppressNextClick = true;
+  }
+  pointerDrag = null;
+  draggedTile = null;
+  document.body.classList.remove("dragging-tile");
+  clearDragHighlights();
+  hideDragGhost();
+});
+
+document.addEventListener("pointercancel", e => {
+  if (!pointerDrag || pointerDrag.pointerId !== e.pointerId) return;
+  pointerDrag = null;
+  draggedTile = null;
+  document.body.classList.remove("dragging-tile");
+  clearDragHighlights();
+  hideDragGhost();
+});
+
+document.addEventListener("dragstart", e => {
+  const tile = e.target.closest("[data-action='pick-value']");
+  if (!tile || status !== "playing") return;
+  draggedTile = { cat: tile.dataset.cat, val: parseInt(tile.dataset.val) };
+  document.body.classList.add("dragging-tile");
+  e.dataTransfer.setData("text/plain", JSON.stringify(draggedTile));
+  e.dataTransfer.effectAllowed = "copy";
+});
+
+document.addEventListener("dragover", e => {
+  const strike = e.target.closest("[data-strike-column='true']");
+  if (strike && status === "playing") {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = "copy";
+    strike.classList.add("strike-over");
+    return;
+  }
+
+  const cell = e.target.closest("[data-drop-cell='true']");
+  if (!cell || status !== "playing") return;
+  e.preventDefault();
+  e.dataTransfer.dropEffect = "copy";
+  document.querySelectorAll(`[data-drop-cell='true'][data-slot='${cell.dataset.slot}']`).forEach(el => el.classList.add("drag-over"));
+});
+
+document.addEventListener("dragleave", e => {
+  const strike = e.target.closest("[data-strike-column='true']");
+  if (strike && !strike.contains(e.relatedTarget)) {
+    strike.classList.remove("strike-over");
+    return;
+  }
+
+  const cell = e.target.closest("[data-drop-cell='true']");
+  if (!cell || cell.contains(e.relatedTarget)) return;
+  document.querySelectorAll(`[data-drop-cell='true'][data-slot='${cell.dataset.slot}']`).forEach(el => el.classList.remove("drag-over"));
+});
+
+document.addEventListener("drop", e => {
+  const strike = e.target.closest("[data-strike-column='true']");
+  if (strike && status === "playing") {
+    e.preventDefault();
+    document.querySelectorAll(".orbit-cell.drag-over").forEach(el => el.classList.remove("drag-over"));
+    document.querySelectorAll(".orbit-strike-drop.strike-over").forEach(el => el.classList.remove("strike-over"));
+    let data = null;
+    try { data = JSON.parse(e.dataTransfer.getData("text/plain")); } catch (_) { return; }
+    if (!data) return;
+    handleTileStrikeDrop(data.cat, parseInt(strike.dataset.slot), data.val);
+    return;
+  }
+
+  const cell = e.target.closest("[data-drop-cell='true']");
+  if (!cell || status !== "playing") return;
+  e.preventDefault();
+  document.querySelectorAll(".orbit-cell.drag-over").forEach(el => el.classList.remove("drag-over"));
+  document.querySelectorAll(".orbit-strike-drop.strike-over").forEach(el => el.classList.remove("strike-over"));
+  let data = null;
+  try { data = JSON.parse(e.dataTransfer.getData("text/plain")); } catch (_) { return; }
+  if (!data) return;
+  handleTileDrop(data.cat, parseInt(cell.dataset.slot), data.val);
+});
+
+document.addEventListener("dragend", () => {
+  draggedTile = null;
+  document.body.classList.remove("dragging-tile");
+  document.querySelectorAll(".orbit-cell.drag-over").forEach(el => el.classList.remove("drag-over"));
+  document.querySelectorAll(".orbit-strike-drop.strike-over").forEach(el => el.classList.remove("strike-over"));
 });
 
 // ============================================================
