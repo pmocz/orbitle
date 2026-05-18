@@ -446,7 +446,6 @@ let selected = { cat: null, slot: null, mode: "place" };
 let status = "playing"; // playing | won | done
 let showHelp = false;
 let crossedClues = new Set();
-let draggedTile = null;
 let pointerDrag = null;
 let suppressNextClick = false;
 
@@ -871,7 +870,6 @@ document.addEventListener("pointermove", e => {
   if (!pointerDrag.dragging && Math.hypot(dx, dy) < 6) return;
   if (!pointerDrag.dragging) {
     pointerDrag.dragging = true;
-    draggedTile = pointerDrag.data;
     document.body.classList.add("dragging-tile");
     showDragGhost(e.clientX, e.clientY, pointerDrag.tileHTML);
   } else {
@@ -888,7 +886,6 @@ document.addEventListener("pointerup", e => {
     suppressNextClick = true;
   }
   pointerDrag = null;
-  draggedTile = null;
   document.body.classList.remove("dragging-tile");
   clearDragHighlights();
   hideDragGhost();
@@ -897,75 +894,9 @@ document.addEventListener("pointerup", e => {
 document.addEventListener("pointercancel", e => {
   if (!pointerDrag || pointerDrag.pointerId !== e.pointerId) return;
   pointerDrag = null;
-  draggedTile = null;
   document.body.classList.remove("dragging-tile");
   clearDragHighlights();
   hideDragGhost();
-});
-
-document.addEventListener("dragstart", e => {
-  const tile = e.target.closest("[data-action='pick-value']");
-  if (!tile || status !== "playing") return;
-  draggedTile = { cat: tile.dataset.cat, val: parseInt(tile.dataset.val) };
-  document.body.classList.add("dragging-tile");
-  e.dataTransfer.setData("text/plain", JSON.stringify(draggedTile));
-  e.dataTransfer.effectAllowed = "copy";
-});
-
-document.addEventListener("dragover", e => {
-  const strike = e.target.closest("[data-strike-column='true']");
-  if (strike && status === "playing") {
-    e.preventDefault();
-    e.dataTransfer.dropEffect = "copy";
-    strike.classList.add("strike-over");
-    return;
-  }
-
-  const column = e.target.closest("[data-drop-column='true']");
-  if (!column || status !== "playing") return;
-  e.preventDefault();
-  e.dataTransfer.dropEffect = "copy";
-  highlightDropColumn(column.dataset.slot);
-});
-
-document.addEventListener("dragleave", e => {
-  const strike = e.target.closest("[data-strike-column='true']");
-  if (strike && !strike.contains(e.relatedTarget)) {
-    strike.classList.remove("strike-over");
-    return;
-  }
-
-  const column = e.target.closest("[data-drop-column='true']");
-  if (!column || column.contains(e.relatedTarget)) return;
-  clearDragHighlights();
-});
-
-document.addEventListener("drop", e => {
-  const strike = e.target.closest("[data-strike-column='true']");
-  if (strike && status === "playing") {
-    e.preventDefault();
-    clearDragHighlights();
-    let data = null;
-    try { data = JSON.parse(e.dataTransfer.getData("text/plain")); } catch (_) { return; }
-    if (!data) return;
-    handleTileStrikeDrop(data.cat, parseInt(strike.dataset.slot), data.val);
-    return;
-  }
-
-  const column = e.target.closest("[data-drop-column='true']");
-  if (!column || status !== "playing") return;
-  e.preventDefault();
-  clearDragHighlights();
-  let data = null;
-  try { data = JSON.parse(e.dataTransfer.getData("text/plain")); } catch (_) { return; }
-  if (!data) return;
-  handleTileDrop(data.cat, parseInt(column.dataset.slot), data.val);
-});
-
-document.addEventListener("dragend", () => {
-  draggedTile = null;
-  document.body.classList.remove("dragging-tile");
-  clearDragHighlights();
 });
 
 // ============================================================
