@@ -482,13 +482,13 @@ body, html {
 }
 
 .orbit-tile-icon.moons {
-  width: 16px;
+  width: 13px;
   background: none;
   filter: drop-shadow(0 0 4px rgba(215, 222, 234, 0.42));
 }
 
 .orbit-cell .orbit-tile-icon.moons {
-  width: 14px;
+  width: 12px;
 }
 
 .orbit-tile-icon.moons::before,
@@ -497,7 +497,7 @@ body, html {
 }
 
 .orbit-tile-icon.moons-0::after {
-  content: "x";
+  content: "o";
   display: block;
   position: absolute;
   color: #8fa3c4;
@@ -515,15 +515,15 @@ body, html {
 
 .orbit-tile-icon.moons-2 {
   background:
-    radial-gradient(circle at 24% 50%, #d7deea 0 2.6px, transparent 2.8px),
-    radial-gradient(circle at 76% 50%, #8fa3c4 0 2.6px, transparent 2.8px);
+    radial-gradient(circle at 28% 50%, #d7deea 0 2.4px, transparent 2.6px),
+    radial-gradient(circle at 72% 50%, #8fa3c4 0 2.4px, transparent 2.6px);
 }
 
 .orbit-tile-icon.moons-3 {
   background:
-    radial-gradient(circle at 50% 24%, #d7deea 0 2.4px, transparent 2.6px),
-    radial-gradient(circle at 23% 70%, #8fa3c4 0 2.4px, transparent 2.6px),
-    radial-gradient(circle at 77% 70%, #6b8cb8 0 2.4px, transparent 2.6px);
+    radial-gradient(circle at 50% 25%, #d7deea 0 2.2px, transparent 2.4px),
+    radial-gradient(circle at 28% 70%, #8fa3c4 0 2.2px, transparent 2.4px),
+    radial-gradient(circle at 72% 70%, #6b8cb8 0 2.2px, transparent 2.4px);
 }
 
 .orbit-cell-remove {
