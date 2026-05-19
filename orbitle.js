@@ -622,7 +622,9 @@ function optionHTML(cat, vi) {
   if (cat === "color") return `<div class="orbit-tile-content">${tileIconHTML(cat, vi)}<span>${escHTML(COLORS[vi])}</span></div>`;
   if (cat === "atmosphere") return `<div class="orbit-tile-content">${tileIconHTML(cat, vi)}<span>${escHTML(ATMOSPHERES[vi])}</span></div>`;
   if (cat === "planet") return `<div class="orbit-tile-content">${tileIconHTML(cat, vi)}<span>${escHTML(PLANETS[vi])}</span></div>`;
-  if (cat === "moons") return `<div class="orbit-tile-content">${tileIconHTML(cat, vi)}<span>${MOONS[vi]} moon${MOONS[vi] === 1 ? "" : "s"}</span></div>`;
+  if (cat === "moons") {
+    return `<div class="orbit-tile-content">${tileIconHTML(cat, vi)}<span class="moon-label-full">${MOONS[vi]} moon${MOONS[vi] === 1 ? "" : "s"}</span><span class="moon-label-short">${MOONS[vi]} mns</span></div>`;
+  }
   return "?";
 }
 
@@ -703,7 +705,7 @@ function render() {
 
     h += `<div class="orbit-column-strikes">`;
     for (let slot = 0; slot < 4; slot++) {
-      h += `<div class="orbit-strike-drop${selected.slot === slot && selected.mode === "strike" ? " selected" : ""}" data-action="select-strike" data-strike-column="true" data-slot="${slot}">Rule out</div>`;
+      h += `<div class="orbit-strike-drop${selected.slot === slot && selected.mode === "strike" ? " selected" : ""}" data-action="select-strike" data-strike-column="true" data-slot="${slot}">rule out</div>`;
     }
     h += `</div>`;
     h += `</div>`; // end board
@@ -785,7 +787,10 @@ document.addEventListener("click", e => {
       const idx = parseInt(el.dataset.idx);
       const n = new Set(crossedClues);
       n.has(idx) ? n.delete(idx) : n.add(idx);
-      crossedClues = n; render(); break;
+      crossedClues = n;
+      if (window.matchMedia?.("(max-width: 700px)").matches) mobileCluesOpen = false;
+      render();
+      break;
     }
     case "select-column": handleCellClick(parseInt(el.dataset.slot)); break;
     case "select-strike": handleStrikeSelect(parseInt(el.dataset.slot)); break;
