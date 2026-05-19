@@ -649,7 +649,7 @@ function render() {
 
   if (showHelp) {
     h += `<div class="orbit-help-content">
-      Four orbits surround a star. Each orbit holds a unique planet <strong>color</strong>, <strong>type</strong>,
+      Four planets orbit a star. Each orbit holds a unique planet <strong>color</strong>, <strong>type</strong>,
       <strong>atmosphere</strong>, and <strong>moon count</strong>. Use the clues to deduce which attributes
       belong to which orbit. Every puzzle has exactly one solution reachable by pure logic.
       Drag or click tiles to an 'orbit', or 'rule out' a combination.
