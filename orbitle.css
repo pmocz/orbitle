@@ -8,6 +8,7 @@ body, html {
   font-family: 'JetBrains Mono', monospace;
   min-height: 100vh;
   overflow-x: hidden;
+  user-select: none;
 }
 
 .orbit-root {
@@ -171,6 +172,7 @@ body, html {
   backdrop-filter: blur(8px);
   position: relative;
   overflow: hidden;
+  user-select: none;
 }
 
 .orbit-columns {
@@ -432,7 +434,7 @@ body, html {
   color: #c98282;
   cursor: pointer;
   font-family: 'JetBrains Mono', monospace;
-  font-size: 0.82rem;
+  font-size: 0.95rem;
   line-height: 15px;
   display: flex;
   align-items: center;
@@ -487,6 +489,7 @@ body, html {
   text-transform: uppercase;
   cursor: pointer;
   touch-action: manipulation;
+  transform-origin: center;
   transition: all 0.15s;
 }
 
@@ -507,6 +510,10 @@ body.dragging-tile .orbit-cell-strikes {
   background: rgba(110, 42, 48, 0.96);
   color: #ffe0e0;
   box-shadow: 0 0 10px rgba(184, 90, 90, 0.35);
+}
+
+.orbit-strike-drop.strike-over {
+  transform: scale(1.08);
 }
 
 .orbit-strike-drop.selected {

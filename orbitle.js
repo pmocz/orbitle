@@ -314,7 +314,7 @@ function clueBetween(sol) {
       const inner = sY < sZ ? { cat: cY, val: vY } : { cat: cZ, val: vZ };
       const outer = sY < sZ ? { cat: cZ, val: vZ } : { cat: cY, val: vY };
       return {
-        text: `The ${labelFor(cX, vX)} orbits directly between the ${labelFor(inner.cat, inner.val)} and the ${labelFor(outer.cat, outer.val)}.`,
+        text: `The ${labelFor(cX, vX)} orbits directly between the ${labelFor(inner.cat, inner.val)} (inward) and the ${labelFor(outer.cat, outer.val)} (outward).`,
         test: (s) => {
           const a = slotOf(s,cX,vX), b = slotOf(s,cY,vY), c = slotOf(s,cZ,vZ);
           return a > Math.min(b,c) && a < Math.max(b,c) && Math.abs(a - b) === 1 && Math.abs(a - c) === 1;
@@ -375,7 +375,7 @@ function generatePuzzle() {
   const solution = { color: shuffle([0,1,2,3]), planet: shuffle([0,1,2,3]), atmosphere: shuffle([0,1,2,3]), moons: shuffle([0,1,2,3]) };
   const pool = [];
   const seedClues = shuffle(CATEGORIES)
-    .slice(0, 3)
+    .slice(0, 2)
     .map(cat => clueAtSlot(solution, cat.key, Math.floor(Math.random() * 4)));
   pool.push(...seedClues);
   for (let i = 0; i < 160; i++) {
@@ -412,7 +412,7 @@ function generatePuzzle() {
   while (changed) {
     changed = false;
     for (let i = 0; i < minimal.length; i++) {
-      if (minimal[i].anchor && minimal.filter(c => c.anchor).length <= 3) continue;
+      if (minimal[i].anchor && minimal.filter(c => c.anchor).length <= 2) continue;
       const without = minimal.filter((_, j) => j !== i);
       if (countSolutionsFast(without, 2) === 1) { minimal = without; changed = true; break; }
     }
