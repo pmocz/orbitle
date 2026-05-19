@@ -675,7 +675,7 @@ function render() {
       CATEGORIES.forEach(cat => {
         const v = board[cat.key][slot];
         const cs = effectiveStrikes(cat.key, slot);
-        h += `<div class="orbit-cell${v === null ? " empty" : ""}" data-cat="${cat.key}" data-slot="${slot}">`;
+        h += `<div class="orbit-cell ${cat.key}${v === null ? " empty" : ""}" data-cat="${cat.key}" data-slot="${slot}">`;
         h += v !== null ? cellContentHTML(cat.key, v) : `·`;
         if (v !== null) {
           h += `<button class="orbit-cell-remove" data-action="remove-value" data-cat="${cat.key}" data-slot="${slot}" aria-label="Remove ${escHTML(cat.label)} from orbit ${slot + 1}">×</button>`;
@@ -697,7 +697,7 @@ function render() {
     h += `<div class="orbit-picker">`;
     h += `<div class="orbit-tile-tray">`;
     CATEGORIES.forEach(cat => {
-      h += `<div class="orbit-tile-row"><div class="orbit-options">`;
+      h += `<div class="orbit-tile-row ${cat.key}"><div class="orbit-options">`;
       cat.values.forEach((_, vi) => {
         const canPick = selected.slot !== null;
         const placed = tileIsPlaced(cat.key, vi);
@@ -732,10 +732,10 @@ function render() {
       <div class="orbit-reveal-card">
         <div class="orbit-reveal-sub">System charted</div>
         <div class="orbit-reveal-title">Solved</div>
-        <div style="font-size:0.85rem;color:#c0c8d8;margin-bottom:1.5rem;font-style:italic;font-family:'Cormorant Garamond',serif">
+        <div class="orbit-reveal-copy">
           All observations reconciled. The star system stands revealed.
         </div>
-        <button class="orbit-btn gold" data-action="new-puzzle" style="width:100%">Chart Another</button>
+        <button class="orbit-btn gold full" data-action="new-puzzle">Chart Another</button>
       </div>
     </div>`;
   }
