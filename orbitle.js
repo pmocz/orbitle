@@ -16,6 +16,7 @@ const CATEGORIES = [
   { key: "atmosphere", label: "Atmosphere", values: ATMOSPHERES, short: ATMOSPHERE_SHORT },
   { key: "moons",      label: "Moons",      values: MOONS,       short: MOONS.map(String) },
 ];
+const CATEGORY_KEYS = CATEGORIES.map(cat => cat.key);
 
 // ============================================================
 // PERMUTATION HELPERS
@@ -430,18 +431,8 @@ function generatePuzzleWithRetry(maxAttempts = 8) {
 // ============================================================
 let puzzle = null;
 let loading = true;
-let board = {
-  color:      [null, null, null, null],
-  planet:     [null, null, null, null],
-  atmosphere: [null, null, null, null],
-  moons:      [null, null, null, null],
-};
-let strikes = {
-  color:      [new Set(), new Set(), new Set(), new Set()],
-  planet:     [new Set(), new Set(), new Set(), new Set()],
-  atmosphere: [new Set(), new Set(), new Set(), new Set()],
-  moons:      [new Set(), new Set(), new Set(), new Set()],
-};
+let board = emptyBoard();
+let strikes = emptyStrikes();
 let selected = { cat: null, slot: null, mode: "place" };
 let status = "playing"; // playing | won | done
 let showHelp = false;
@@ -452,6 +443,25 @@ let suppressNextClick = null;
 // ============================================================
 // HELPERS
 // ============================================================
+function emptyBoard() {
+  return Object.fromEntries(CATEGORY_KEYS.map(key => [key, [null, null, null, null]]));
+}
+
+function emptyStrikes() {
+  return Object.fromEntries(CATEGORY_KEYS.map(key => [key, [new Set(), new Set(), new Set(), new Set()]]));
+}
+
+function resetGameState() {
+  board = emptyBoard();
+  strikes = emptyStrikes();
+  selected = { cat: null, slot: null, mode: "place" };
+  status = "playing";
+  crossedClues = new Set();
+  pointerDrag = null;
+  suppressNextClick = null;
+  document.body?.classList.remove("dragging-tile");
+}
+
 function effectiveStrikes(cat, slot) {
   const out = new Set(strikes[cat][slot]);
   for (let i = 0; i < 4; i++) {
@@ -463,7 +473,7 @@ function effectiveStrikes(cat, slot) {
 function checkWin(b) {
   if (!puzzle) return;
   if (!Object.values(b).every(arr => arr.every(v => v !== null))) return;
-  if (["color","planet","atmosphere","moons"].every(c => b[c].every((v, i) => v === puzzle.solution[c][i]))) {
+  if (CATEGORY_KEYS.every(c => b[c].every((v, i) => v === puzzle.solution[c][i]))) {
     status = "won";
     render();
   }
@@ -472,7 +482,7 @@ function checkWin(b) {
 // ============================================================
 // CLICK HANDLERS
 // ============================================================
-function handleCellClick(cat, slot) {
+function handleCellClick(slot) {
   if (status !== "playing") return;
   selected = { cat: null, slot, mode: "place" };
   render();
@@ -541,41 +551,13 @@ function handleRemoveValue(cat, slot) {
 }
 
 function handleClear() {
-  board = {
-    color:      [null, null, null, null],
-    planet:     [null, null, null, null],
-    atmosphere: [null, null, null, null],
-    moons:      [null, null, null, null],
-  };
-  strikes = {
-    color:      [new Set(), new Set(), new Set(), new Set()],
-    planet:     [new Set(), new Set(), new Set(), new Set()],
-    atmosphere: [new Set(), new Set(), new Set(), new Set()],
-    moons:      [new Set(), new Set(), new Set(), new Set()],
-  };
-  selected = { cat: null, slot: null, mode: "place" };
-  status = "playing";
-  crossedClues = new Set();
+  resetGameState();
   render();
 }
 
 function handleNew() {
   loading = true;
-  status = "playing";
-  board = {
-    color:      [null, null, null, null],
-    planet:     [null, null, null, null],
-    atmosphere: [null, null, null, null],
-    moons:      [null, null, null, null],
-  };
-  strikes = {
-    color:      [new Set(), new Set(), new Set(), new Set()],
-    planet:     [new Set(), new Set(), new Set(), new Set()],
-    atmosphere: [new Set(), new Set(), new Set(), new Set()],
-    moons:      [new Set(), new Set(), new Set(), new Set()],
-  };
-  selected = { cat: null, slot: null, mode: "place" };
-  crossedClues = new Set();
+  resetGameState();
   render();
   setTimeout(() => { puzzle = generatePuzzleWithRetry(); loading = false; render(); }, 50);
 }
@@ -760,16 +742,19 @@ function render() {
 // ============================================================
 // CLICK DELEGATION
 // ============================================================
+function shouldSuppressClick(e) {
+  if (!suppressNextClick) return false;
+  const { x, y, until } = suppressNextClick;
+  const closeToDrop = Math.hypot(e.clientX - x, e.clientY - y) < 12;
+  suppressNextClick = null;
+  return Date.now() < until && closeToDrop;
+}
+
 document.addEventListener("click", e => {
-  if (suppressNextClick) {
-    const { x, y, until } = suppressNextClick;
-    const closeToDrop = Math.hypot(e.clientX - x, e.clientY - y) < 12;
-    suppressNextClick = null;
-    if (Date.now() < until && closeToDrop) {
-      e.preventDefault();
-      e.stopPropagation();
-      return;
-    }
+  if (shouldSuppressClick(e)) {
+    e.preventDefault();
+    e.stopPropagation();
+    return;
   }
 
   if (status === "won") {
@@ -789,8 +774,7 @@ document.addEventListener("click", e => {
       n.has(idx) ? n.delete(idx) : n.add(idx);
       crossedClues = n; render(); break;
     }
-    case "cell":       handleCellClick(el.dataset.cat, parseInt(el.dataset.slot)); break;
-    case "select-column": handleCellClick(null, parseInt(el.dataset.slot)); break;
+    case "select-column": handleCellClick(parseInt(el.dataset.slot)); break;
     case "select-strike": handleStrikeSelect(parseInt(el.dataset.slot)); break;
     case "pick-value": handleValuePick(el.dataset.cat, parseInt(el.dataset.val)); break;
     case "remove-value": handleRemoveValue(el.dataset.cat, parseInt(el.dataset.slot)); break;
@@ -807,8 +791,31 @@ function clearDragHighlights() {
   document.querySelectorAll(".orbit-strike-drop.strike-over").forEach(el => el.classList.remove("strike-over"));
 }
 
-function highlightDropColumn(slot) {
-  document.querySelectorAll(`[data-drop-column='true'][data-slot='${slot}']`).forEach(el => el.classList.add("drag-over"));
+function dragTargetKey(target) {
+  return target ? `${target.type}:${target.slot}` : "";
+}
+
+function getPointerDropTarget(x, y) {
+  const target = document.elementFromPoint(x, y);
+  const strike = target?.closest?.("[data-strike-column='true']");
+  if (strike) return { type: "strike", slot: parseInt(strike.dataset.slot) };
+  const column = target?.closest?.("[data-drop-column='true']");
+  if (column) return { type: "column", slot: parseInt(column.dataset.slot) };
+  return null;
+}
+
+function applyDragHighlight(target) {
+  clearDragHighlights();
+  if (!target) return;
+  if (target.type === "strike") {
+    document
+      .querySelector(`.orbit-strike-drop[data-slot='${target.slot}']`)
+      ?.classList.add("strike-over");
+    return;
+  }
+  document
+    .querySelector(`.orbit-column[data-slot='${target.slot}']`)
+    ?.classList.add("drag-over");
 }
 
 function showDragGhost(x, y, html) {
@@ -841,35 +848,37 @@ function startPointerTileDrag(e, tile) {
     startY: e.clientY,
     dragging: false,
     tileHTML: tile.innerHTML,
+    targetKey: "",
     data: { cat: tile.dataset.cat, val: parseInt(tile.dataset.val) }
   };
   tile.setPointerCapture?.(e.pointerId);
 }
 
 function updatePointerDropTarget(x, y) {
-  clearDragHighlights();
-  const target = document.elementFromPoint(x, y);
-  const strike = target?.closest?.("[data-strike-column='true']");
-  if (strike) {
-    strike.classList.add("strike-over");
-    return;
-  }
-  const column = target?.closest?.("[data-drop-column='true']");
-  if (!column) return;
-  highlightDropColumn(column.dataset.slot);
+  const target = getPointerDropTarget(x, y);
+  const key = dragTargetKey(target);
+  if (key === pointerDrag?.targetKey) return;
+  pointerDrag.targetKey = key;
+  applyDragHighlight(target);
 }
 
 function finishPointerTileDrag(x, y) {
   if (!pointerDrag?.dragging) return;
   const data = pointerDrag.data;
-  const target = document.elementFromPoint(x, y);
-  const strike = target?.closest?.("[data-strike-column='true']");
-  if (strike) {
-    handleTileStrikeDrop(data.cat, parseInt(strike.dataset.slot), data.val);
+  const target = getPointerDropTarget(x, y);
+  if (!target) return;
+  if (target.type === "strike") {
+    handleTileStrikeDrop(data.cat, target.slot, data.val);
     return;
   }
-  const column = target?.closest?.("[data-drop-column='true']");
-  if (column) handleTileDrop(data.cat, parseInt(column.dataset.slot), data.val);
+  handleTileDrop(data.cat, target.slot, data.val);
+}
+
+function cleanupPointerDrag() {
+  pointerDrag = null;
+  document.body?.classList.remove("dragging-tile");
+  clearDragHighlights();
+  hideDragGhost();
 }
 
 document.addEventListener("pointerdown", e => {
@@ -886,7 +895,7 @@ document.addEventListener("pointermove", e => {
   if (!pointerDrag.dragging && Math.hypot(dx, dy) < 6) return;
   if (!pointerDrag.dragging) {
     pointerDrag.dragging = true;
-    document.body.classList.add("dragging-tile");
+    document.body?.classList.add("dragging-tile");
     showDragGhost(e.clientX, e.clientY, pointerDrag.tileHTML);
   } else {
     moveDragGhost(e.clientX, e.clientY);
@@ -901,18 +910,12 @@ document.addEventListener("pointerup", e => {
     finishPointerTileDrag(e.clientX, e.clientY);
     suppressNextClick = { x: e.clientX, y: e.clientY, until: Date.now() + 350 };
   }
-  pointerDrag = null;
-  document.body.classList.remove("dragging-tile");
-  clearDragHighlights();
-  hideDragGhost();
+  cleanupPointerDrag();
 });
 
 document.addEventListener("pointercancel", e => {
   if (!pointerDrag || pointerDrag.pointerId !== e.pointerId) return;
-  pointerDrag = null;
-  document.body.classList.remove("dragging-tile");
-  clearDragHighlights();
-  hideDragGhost();
+  cleanupPointerDrag();
 });
 
 // ============================================================
