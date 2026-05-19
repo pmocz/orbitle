@@ -49,9 +49,9 @@ function valAt(sol, cat, slot) { return sol[cat][slot]; }
 function slotOf(sol, cat, valIdx) { return sol[cat].indexOf(valIdx); }
 
 function labelFor(cat, valIdx) {
-  if (cat === "color") return `${COLORS[valIdx]} world`;
+  if (cat === "color") return `${COLORS[valIdx]} colored planet`;
   if (cat === "planet") return `${PLANETS[valIdx]} planet`;
-  if (cat === "atmosphere") return `${ATMOSPHERES[valIdx]} atmosphere`;
+  if (cat === "atmosphere") return `${ATMOSPHERES[valIdx]} atmosphere planet`;
   if (cat === "moons") return `${MOONS[valIdx]}-moon planet`;
   return "?";
 }
@@ -649,7 +649,7 @@ function render() {
 
   if (showHelp) {
     h += `<div class="orbit-help-content">
-      Four orbits surround a star. Each orbit holds a unique <strong>color</strong>, <strong>planet</strong>,
+      Four orbits surround a star. Each orbit holds a unique <strong>color</strong>, <strong>type</strong>,
       <strong>atmosphere</strong>, and <strong>moon count</strong>. Use the clues to deduce which attributes
       belong to which orbit. Every puzzle has exactly one solution reachable by pure logic — no guessing required.
       Select an 'orbit column' and tap tiles to place them. Select a 'rule out' box and tap tiles to rule them out.
