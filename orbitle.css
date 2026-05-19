@@ -101,6 +101,12 @@ body, html {
 }
 
 /* ── Clues ── */
+.orbit-game-layout,
+.orbit-play-area {
+  width: 100%;
+  max-width: 600px;
+}
+
 .orbit-clues {
   width: 100%;
   max-width: 600px;
@@ -503,7 +509,7 @@ body, html {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 0.55rem;
-  margin-top: 0.45rem;
+  margin-top: 0;
   position: relative;
   z-index: 1;
 }
@@ -731,6 +737,34 @@ body.dragging-tile .orbit-option {
   font-style: italic;
   color: #d4a64a;
   margin-bottom: 0.5rem;
+}
+
+@media (min-width: 980px) {
+  .orbit-root {
+    padding-inline: 1.5rem;
+  }
+
+  .orbit-game-layout {
+    max-width: 1120px;
+    display: grid;
+    grid-template-columns: minmax(300px, 420px) minmax(560px, 600px);
+    align-items: start;
+    justify-content: center;
+    gap: 1.25rem;
+  }
+
+  .orbit-play-area {
+    max-width: 600px;
+  }
+
+  .orbit-clues {
+    position: sticky;
+    top: 1rem;
+    max-width: none;
+    max-height: calc(100vh - 2rem);
+    overflow: auto;
+    margin-bottom: 0;
+  }
 }
 
 /* ── Responsive ── */

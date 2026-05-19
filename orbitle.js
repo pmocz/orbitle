@@ -660,12 +660,16 @@ function render() {
   }
 
   if (!loading && puzzle) {
+    h += `<div class="orbit-game-layout">`;
+
     // Clues
     h += `<div class="orbit-clues"><div class="orbit-clues-header">Observations</div>`;
     puzzle.clues.forEach((c, i) => {
       h += `<div class="orbit-clue${crossedClues.has(i) ? " crossed" : ""}" data-action="toggle-clue" data-idx="${i}">${clueTextHTML(c.text)}</div>`;
     });
     h += `</div>`;
+
+    h += `<div class="orbit-play-area">`;
 
     // Board
     h += `<div class="orbit-board">`;
@@ -719,6 +723,9 @@ function render() {
       <button class="orbit-btn secondary" data-action="clear">Clear</button>
       <button class="orbit-btn gold" data-action="new-puzzle">New Puzzle</button>
     </div>`;
+
+    h += `</div>`; // end play area
+    h += `</div>`; // end game layout
   }
 
   // Won overlay
@@ -797,6 +804,7 @@ function clearStrikePreviews() {
 
 function showStrikePreviews(cat, valIdx) {
   for (let slot = 0; slot < 4; slot++) {
+    if (board[cat][slot] !== null) continue;
     if (!effectiveStrikes(cat, slot).has(valIdx)) continue;
     document
       .querySelector(`.orbit-cell[data-cat='${cat}'][data-slot='${slot}']`)
