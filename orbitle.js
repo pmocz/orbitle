@@ -791,6 +791,19 @@ function clearDragHighlights() {
   document.querySelectorAll(".orbit-strike-drop.strike-over").forEach(el => el.classList.remove("strike-over"));
 }
 
+function clearStrikePreviews() {
+  document.querySelectorAll(".orbit-cell.strike-preview").forEach(el => el.classList.remove("strike-preview"));
+}
+
+function showStrikePreviews(cat, valIdx) {
+  for (let slot = 0; slot < 4; slot++) {
+    if (!effectiveStrikes(cat, slot).has(valIdx)) continue;
+    document
+      .querySelector(`.orbit-cell[data-cat='${cat}'][data-slot='${slot}']`)
+      ?.classList.add("strike-preview");
+  }
+}
+
 function dragTargetKey(target) {
   return target ? `${target.type}:${target.slot}` : "";
 }
@@ -878,6 +891,7 @@ function cleanupPointerDrag() {
   pointerDrag = null;
   document.body?.classList.remove("dragging-tile");
   clearDragHighlights();
+  clearStrikePreviews();
   hideDragGhost();
 }
 
@@ -896,6 +910,7 @@ document.addEventListener("pointermove", e => {
   if (!pointerDrag.dragging) {
     pointerDrag.dragging = true;
     document.body?.classList.add("dragging-tile");
+    showStrikePreviews(pointerDrag.data.cat, pointerDrag.data.val);
     showDragGhost(e.clientX, e.clientY, pointerDrag.tileHTML);
   } else {
     moveDragGhost(e.clientX, e.clientY);

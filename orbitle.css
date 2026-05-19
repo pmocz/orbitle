@@ -253,6 +253,35 @@ body, html {
   color: #3a4560;
 }
 
+.orbit-cell.strike-preview::before,
+.orbit-cell.strike-preview::after {
+  content: "";
+  position: absolute;
+  inset: 4px;
+  pointer-events: none;
+  z-index: 2;
+}
+
+.orbit-cell.strike-preview::before {
+  background: linear-gradient(
+    to bottom right,
+    transparent calc(50% - 1px),
+    rgba(164, 86, 90, 0.56) calc(50% - 1px),
+    rgba(164, 86, 90, 0.56) calc(50% + 1px),
+    transparent calc(50% + 1px)
+  );
+}
+
+.orbit-cell.strike-preview::after {
+  background: linear-gradient(
+    to top right,
+    transparent calc(50% - 1px),
+    rgba(164, 86, 90, 0.56) calc(50% - 1px),
+    rgba(164, 86, 90, 0.56) calc(50% + 1px),
+    transparent calc(50% + 1px)
+  );
+}
+
 .orbit-tile-content {
   display: flex;
   align-items: center;
