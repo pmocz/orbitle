@@ -199,10 +199,10 @@ body, html {
 .orbit-column {
   min-width: 0;
   padding: 0.45rem;
-  border: 1px solid rgba(112, 164, 230, 0.42);
+  border: 1px solid rgba(112, 164, 230, 0.52);
   border-radius: 8px;
-  background: rgba(30, 54, 92, 0.72);
-  box-shadow: inset 0 0 24px rgba(112, 164, 230, 0.12), 0 0 14px rgba(74, 118, 180, 0.08);
+  background: rgba(34, 61, 102, 0.9);
+  box-shadow: inset 0 0 22px rgba(112, 164, 230, 0.14), 0 0 14px rgba(74, 118, 180, 0.1);
   cursor: pointer;
   touch-action: manipulation;
   transition: all 0.15s;
@@ -210,18 +210,18 @@ body, html {
 
 .orbit-column:hover {
   border-color: rgba(136, 186, 245, 0.68);
-  background: rgba(38, 68, 112, 0.82);
+  background: rgba(40, 70, 114, 0.94);
 }
 
 .orbit-column.selected {
   border-color: rgba(212, 166, 74, 0.72);
-  background: rgba(62, 50, 28, 0.64);
+  background: rgba(76, 62, 36, 0.9);
   box-shadow: inset 0 0 0 1px rgba(212, 166, 74, 0.22), 0 0 22px rgba(212, 166, 74, 0.16);
 }
 
 .orbit-column.drag-over {
   border-color: #d4a64a;
-  background: rgba(72, 58, 32, 0.72);
+  background: rgba(82, 66, 38, 0.92);
   box-shadow: inset 0 0 0 1px rgba(212, 166, 74, 0.34), 0 0 18px rgba(212, 166, 74, 0.16);
 }
 
@@ -280,44 +280,44 @@ body, html {
 }
 
 .orbit-cell:nth-child(1) {
-  border-color: rgba(245, 247, 252, 0.42);
-  background: rgba(100, 102, 108, 0.9);
+  border-color: rgba(245, 247, 252, 0.34);
+  background: rgba(86, 88, 94, 0.96);
 }
 
 .orbit-cell:nth-child(2) {
-  border-color: rgba(214, 142, 58, 0.4);
-  background: rgba(91, 61, 34, 0.9);
+  border-color: rgba(214, 142, 58, 0.42);
+  background: rgba(92, 58, 30, 0.96);
 }
 
 .orbit-cell:nth-child(3) {
-  border-color: rgba(70, 150, 108, 0.4);
-  background: rgba(37, 82, 64, 0.9);
+  border-color: rgba(70, 150, 108, 0.42);
+  background: rgba(32, 78, 58, 0.96);
 }
 
 .orbit-cell:nth-child(4) {
-  border-color: rgba(128, 92, 184, 0.4);
-  background: rgba(66, 51, 98, 0.9);
+  border-color: rgba(128, 92, 184, 0.42);
+  background: rgba(65, 46, 98, 0.96);
 }
 
 .orbit-cell.empty {
-  border-color: rgba(42, 53, 80, 0.8);
+  border-color: rgba(74, 88, 122, 0.7);
   color: #3a4560;
 }
 
 .orbit-cell.empty:nth-child(1) {
-  background: rgba(68, 70, 76, 0.82);
+  background: rgba(68, 70, 76, 0.9);
 }
 
 .orbit-cell.empty:nth-child(2) {
-  background: rgba(66, 47, 32, 0.82);
+  background: rgba(68, 45, 30, 0.9);
 }
 
 .orbit-cell.empty:nth-child(3) {
-  background: rgba(31, 62, 50, 0.82);
+  background: rgba(28, 59, 47, 0.9);
 }
 
 .orbit-cell.empty:nth-child(4) {
-  background: rgba(52, 42, 75, 0.82);
+  background: rgba(49, 38, 76, 0.9);
 }
 
 .orbit-cell.strike-preview::before,
