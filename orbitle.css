@@ -101,7 +101,8 @@ body, html {
 
 /* ── Clues ── */
 .orbit-game-layout,
-.orbit-play-area {
+.orbit-play-area,
+.orbit-actions {
   width: 100%;
   max-width: 600px;
 }
@@ -118,31 +119,12 @@ body, html {
 }
 
 .orbit-clues-header {
-  position: relative;
-  width: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  background: none;
-  border: none;
   font-family: 'Cormorant Garamond', serif;
   font-style: italic;
   font-size: 0.95rem;
   color: #9cb8df;
   margin-bottom: 0.6rem;
   letter-spacing: 0.05em;
-  text-align: left;
-  cursor: default;
-}
-
-.orbit-clues-state {
-  display: none;
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 0.58rem;
-  font-style: normal;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
-  color: #8fa3c4;
 }
 
 .orbit-clue {
@@ -778,16 +760,25 @@ body.dragging-tile .orbit-option {
     max-width: 1120px;
     display: grid;
     grid-template-columns: minmax(300px, 420px) minmax(560px, 600px);
+    grid-template-areas:
+      "clues play"
+      "clues actions";
     align-items: start;
     justify-content: center;
     gap: 1.25rem;
   }
 
   .orbit-play-area {
+    grid-area: play;
     max-width: 600px;
   }
 
+  .orbit-actions {
+    grid-area: actions;
+  }
+
   .orbit-clues {
+    grid-area: clues;
     position: sticky;
     top: 1rem;
     max-width: none;
@@ -798,63 +789,6 @@ body.dragging-tile .orbit-option {
 }
 
 /* ── Responsive ── */
-@media (max-width: 700px) {
-  .orbit-root {
-    padding-bottom: 4.75rem;
-  }
-
-  .orbit-clues {
-    position: fixed;
-    left: 0.75rem;
-    right: 0.75rem;
-    bottom: 0;
-    z-index: 8;
-    max-width: none;
-    max-height: 72vh;
-    margin-bottom: 0;
-    padding: 0.8rem 1rem 1rem;
-    border-color: rgba(107, 140, 184, 0.45);
-    border-bottom: none;
-    border-radius: 8px 8px 0 0;
-    background: rgba(12, 16, 28, 0.96);
-    box-shadow: 0 -18px 45px rgba(0, 0, 0, 0.36), 0 0 22px rgba(107, 140, 184, 0.12);
-    overflow: auto;
-    transform: translateY(calc(100% - 3rem));
-    transition: transform 0.22s ease;
-  }
-
-  .orbit-clues.mobile-open {
-    transform: translateY(0);
-  }
-
-  .orbit-clues-header {
-    min-height: 2.1rem;
-    margin: -0.1rem 0 0.45rem;
-    cursor: pointer;
-    touch-action: manipulation;
-  }
-
-  .orbit-clues-header::before {
-    content: "";
-    position: absolute;
-    left: 50%;
-    top: 0.35rem;
-    width: 42px;
-    height: 3px;
-    border-radius: 999px;
-    background: rgba(143, 163, 196, 0.52);
-    transform: translateX(-50%);
-  }
-
-  .orbit-clues-state {
-    display: inline;
-  }
-
-  .orbit-clue {
-    padding-block: 0.34rem;
-  }
-}
-
 @media (max-width: 600px) {
   .orbit-columns, .orbit-column-strikes { gap: 0.35rem; }
   .orbit-column { padding: 0.35rem; }
