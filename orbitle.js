@@ -642,7 +642,7 @@ function render() {
   // Header
   h += `<header class="orbit-header">
     <h1 class="orbit-title">Orbitle</h1>
-    <div class="orbit-subtitle">A puzzle of celestial deduction</div>
+    <div class="orbit-subtitle">A game of celestial deduction</div>
     <div class="orbit-divider"></div>
     <button class="orbit-help-link" data-action="toggle-help">${showHelp ? "Hide" : "How to play"}</button>
   </header>`;
