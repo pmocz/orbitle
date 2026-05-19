@@ -49,7 +49,7 @@ function valAt(sol, cat, slot) { return sol[cat][slot]; }
 function slotOf(sol, cat, valIdx) { return sol[cat].indexOf(valIdx); }
 
 function labelFor(cat, valIdx) {
-  if (cat === "color") return `${COLORS[valIdx]} colored planet`;
+  if (cat === "color") return `${COLORS[valIdx]}-colored planet`;
   if (cat === "planet") return `${PLANETS[valIdx]} planet`;
   if (cat === "atmosphere") return `${ATMOSPHERES[valIdx]} atmosphere planet`;
   if (cat === "moons") return `${MOONS[valIdx]}-moon planet`;
@@ -622,7 +622,7 @@ function optionHTML(cat, vi) {
   if (cat === "atmosphere") return `<div class="orbit-tile-content">${tileIconHTML(cat, vi)}<span>${escHTML(ATMOSPHERES[vi])}</span></div>`;
   if (cat === "planet") return `<div class="orbit-tile-content">${tileIconHTML(cat, vi)}<span>${escHTML(PLANETS[vi])}</span></div>`;
   if (cat === "moons") {
-    return `<div class="orbit-tile-content">${tileIconHTML(cat, vi)}<span class="moon-label-full">${MOONS[vi]} moon${MOONS[vi] === 1 ? "" : "s"}</span><span class="moon-label-short">${MOONS[vi]} mns</span></div>`;
+    return `<div class="orbit-tile-content">${tileIconHTML(cat, vi)}<span>${MOONS[vi]}-moon</span></div>`;
   }
   return "?";
 }

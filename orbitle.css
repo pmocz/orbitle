@@ -361,10 +361,6 @@ body, html {
   min-width: 0;
 }
 
-.moon-label-short {
-  display: none;
-}
-
 .orbit-tile-icon {
   width: 12px;
   height: 12px;
@@ -874,6 +870,4 @@ body.dragging-tile .orbit-option {
   .orbit-tile-tray { gap: 0.35rem; }
   .orbit-tile-row { padding: 0.3rem; }
   .orbit-option { font-size: 0.65rem; padding: 0.45rem 0.25rem; }
-  .moon-label-full { display: none; }
-  .moon-label-short { display: inline; }
 }
