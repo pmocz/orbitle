@@ -274,7 +274,7 @@ body, html {
 }
 
 .orbit-cell:last-child {
-  border-radius: 0 0 2px 2px;
+  border-radius: 0;
 }
 
 .orbit-cell.empty {
@@ -537,42 +537,23 @@ body, html {
   display: block;
 }
 
-.orbit-column-strikes {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 0.55rem;
-  margin-top: 0;
-  position: relative;
-  z-index: 1;
-}
-
 .orbit-strike-drop {
   display: flex;
   align-items: center;
   justify-content: center;
-  justify-self: center;
-  gap: 0.28rem;
-  width: calc(100% - 0.9rem);
-  min-height: 28px;
-  border: 1px dashed rgba(154, 102, 106, 0.7);
-  border-radius: 2px;
-  background: rgba(58, 36, 42, 0.9);
+  margin: -1px -0.45rem -0.45rem;
+  min-height: 26px;
+  border: 1px solid rgba(126, 82, 88, 0.72);
+  border-radius: 0 0 6px 6px;
+  background: rgba(58, 36, 42, 0.86);
   color: #c9a0a2;
   font-size: 0.52rem;
   letter-spacing: 0.12em;
   line-height: 1;
-  text-transform: uppercase;
   cursor: pointer;
   touch-action: manipulation;
   transform-origin: center;
   transition: all 0.15s;
-}
-
-.orbit-strike-drop::before {
-  content: "x";
-  font-size: 0.62rem;
-  line-height: 1;
-  opacity: 0.85;
 }
 
 .orbit-strike-drop:hover,
@@ -810,9 +791,10 @@ body.dragging-tile .orbit-option {
 
 /* ── Responsive ── */
 @media (max-width: 600px) {
-  .orbit-columns, .orbit-column-strikes { gap: 0.35rem; }
+  .orbit-columns { gap: 0.35rem; }
   .orbit-column { padding: 0.35rem; }
   .orbit-column-values { gap: 0; margin-inline: -0.35rem; }
+  .orbit-strike-drop { margin: -1px -0.35rem -0.35rem; }
   .orbit-header-cell { font-size: 0.55rem; letter-spacing: 0.14em; }
   .orbit-cell { font-size: 0.7rem; padding: 0.4rem 0.2rem; }
   .orbit-clue { font-size: 0.75rem; }

@@ -686,15 +686,11 @@ function render() {
         h += `</div>`;
       });
       h += `</div>`;
+      h += `<div class="orbit-strike-drop${selected.slot === slot && selected.mode === "strike" ? " selected" : ""}" data-action="select-strike" data-strike-column="true" data-slot="${slot}">rule out</div>`;
       h += `</div>`;
     }
     h += `</div>`;
 
-    h += `<div class="orbit-column-strikes">`;
-    for (let slot = 0; slot < 4; slot++) {
-      h += `<div class="orbit-strike-drop${selected.slot === slot && selected.mode === "strike" ? " selected" : ""}" data-action="select-strike" data-strike-column="true" data-slot="${slot}">rule out</div>`;
-    }
-    h += `</div>`;
     h += `</div>`; // end board
 
     // Tile tray
