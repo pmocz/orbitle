@@ -788,7 +788,6 @@ document.addEventListener("click", e => {
       const n = new Set(crossedClues);
       n.has(idx) ? n.delete(idx) : n.add(idx);
       crossedClues = n;
-      if (window.matchMedia?.("(max-width: 700px)").matches) mobileCluesOpen = false;
       render();
       break;
     }
