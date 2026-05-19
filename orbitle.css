@@ -3,7 +3,7 @@
 * { box-sizing: border-box; margin: 0; padding: 0; }
 
 html {
-  font-size: 110%;
+  font-size: 100%;
 }
 
 body, html {
@@ -500,9 +500,17 @@ body, html {
   right: 2px;
   font-size: 0.62rem;
   color: #a87a7d;
-  line-height: 1;
+  line-height: 1.05;
   text-align: center;
   letter-spacing: 0.05em;
+  display: flex;
+  flex-direction: column-reverse;
+  align-items: center;
+  gap: 1px;
+}
+
+.orbit-cell-strikes span {
+  display: block;
 }
 
 .orbit-column-strikes {

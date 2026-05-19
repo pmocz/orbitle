@@ -687,7 +687,7 @@ function render() {
           h += `<button class="orbit-cell-remove" data-action="remove-value" data-cat="${cat.key}" data-slot="${slot}" aria-label="Remove ${escHTML(cat.label)} from orbit ${slot + 1}">×</button>`;
         }
         if (cs.size > 0 && v === null) {
-          h += `<div class="orbit-cell-strikes">&#x2717;${[...cs].map(vi => escHTML(cat.short[vi])).join(",")}</div>`;
+          h += `<div class="orbit-cell-strikes">${[...cs].map(vi => `<span>&#x2717;${escHTML(cat.short[vi])}</span>`).join("")}</div>`;
         }
         h += `</div>`;
       });
