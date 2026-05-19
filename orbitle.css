@@ -233,9 +233,9 @@ body, html {
 
 .orbit-cell {
   padding: 0.55rem 0.3rem;
-  border: 1px solid rgba(42, 53, 80, 0.8);
+  border: 1px solid rgba(92, 122, 170, 0.58);
   border-radius: 2px;
-  background: rgba(20, 26, 44, 0.72);
+  background: rgba(32, 44, 72, 0.9);
   transition: all 0.15s;
   min-height: 40px;
   display: flex;
@@ -247,7 +247,11 @@ body, html {
   position: relative;
 }
 
-.orbit-cell.empty { color: #3a4560; }
+.orbit-cell.empty {
+  border-color: rgba(42, 53, 80, 0.8);
+  background: rgba(20, 26, 44, 0.72);
+  color: #3a4560;
+}
 
 .orbit-tile-content {
   display: flex;
@@ -455,8 +459,8 @@ body, html {
   bottom: 2px;
   left: 2px;
   right: 2px;
-  font-size: 0.55rem;
-  color: #6a4848;
+  font-size: 0.62rem;
+  color: #a87a7d;
   line-height: 1;
   text-align: center;
   letter-spacing: 0.05em;
@@ -479,10 +483,10 @@ body, html {
   gap: 0.28rem;
   width: calc(100% - 0.9rem);
   min-height: 28px;
-  border: 1px dashed rgba(184, 90, 90, 0.7);
+  border: 1px dashed rgba(154, 102, 106, 0.7);
   border-radius: 2px;
-  background: rgba(70, 30, 34, 0.9);
-  color: #d99292;
+  background: rgba(58, 36, 42, 0.9);
+  color: #c9a0a2;
   font-size: 0.52rem;
   letter-spacing: 0.12em;
   line-height: 1;
@@ -500,16 +504,12 @@ body, html {
   opacity: 0.85;
 }
 
-body.dragging-tile .orbit-cell-strikes {
-  opacity: 0.18;
-}
-
 .orbit-strike-drop:hover,
 .orbit-strike-drop.strike-over {
-  border-color: #f0b0b0;
-  background: rgba(110, 42, 48, 0.96);
-  color: #ffe0e0;
-  box-shadow: 0 0 10px rgba(184, 90, 90, 0.35);
+  border-color: #dfb7b9;
+  background: rgba(88, 52, 58, 0.96);
+  color: #f4dcdc;
+  box-shadow: 0 0 10px rgba(154, 102, 106, 0.35);
 }
 
 .orbit-strike-drop.strike-over {
@@ -517,10 +517,10 @@ body.dragging-tile .orbit-cell-strikes {
 }
 
 .orbit-strike-drop.selected {
-  border-color: #f0b0b0;
-  background: rgba(124, 46, 52, 0.98);
-  color: #ffe0e0;
-  box-shadow: inset 0 0 0 1px rgba(240, 176, 176, 0.22), 0 0 14px rgba(184, 90, 90, 0.28);
+  border-color: #dfb7b9;
+  background: rgba(96, 56, 62, 0.98);
+  color: #f4dcdc;
+  box-shadow: inset 0 0 0 1px rgba(223, 183, 185, 0.22), 0 0 14px rgba(154, 102, 106, 0.28);
 }
 
 /* ── Picker ── */
