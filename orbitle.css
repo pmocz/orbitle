@@ -116,6 +116,8 @@ body, html {
   background: rgba(12, 16, 28, 0.7);
   backdrop-filter: blur(8px);
   margin-bottom: 1.2rem;
+  display: flex;
+  flex-direction: column;
 }
 
 .orbit-clues-header {
@@ -161,6 +163,7 @@ body, html {
 }
 
 .orbit-clue.crossed {
+  order: 1;
   color: #4a5468;
   text-decoration: line-through;
   text-decoration-color: #6b8cb8;
