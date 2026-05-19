@@ -460,7 +460,7 @@ body, html {
 
 .orbit-tile-icon.moons-3 {
   background:
-    radial-gradient(circle at 50% 16%, #d7deea 0 2.4px, transparent 2.6px),
+    radial-gradient(circle at 50% 24%, #d7deea 0 2.4px, transparent 2.6px),
     radial-gradient(circle at 23% 70%, #8fa3c4 0 2.4px, transparent 2.6px),
     radial-gradient(circle at 77% 70%, #6b8cb8 0 2.4px, transparent 2.6px);
 }
