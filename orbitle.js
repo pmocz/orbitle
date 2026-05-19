@@ -436,6 +436,7 @@ let strikes = emptyStrikes();
 let selected = { cat: null, slot: null, mode: "place" };
 let status = "playing"; // playing | won | done
 let showHelp = false;
+let mobileCluesOpen = false;
 let crossedClues = new Set();
 let pointerDrag = null;
 let suppressNextClick = null;
@@ -663,7 +664,11 @@ function render() {
     h += `<div class="orbit-game-layout">`;
 
     // Clues
-    h += `<div class="orbit-clues"><div class="orbit-clues-header">Observations</div>`;
+    h += `<div class="orbit-clues${mobileCluesOpen ? " mobile-open" : ""}">
+      <button class="orbit-clues-header" type="button" data-action="toggle-mobile-clues" aria-expanded="${mobileCluesOpen ? "true" : "false"}">
+        <span>Observations</span>
+        <span class="orbit-clues-state">${mobileCluesOpen ? "Hide" : "Open"}</span>
+      </button>`;
     puzzle.clues.forEach((c, i) => {
       h += `<div class="orbit-clue${crossedClues.has(i) ? " crossed" : ""}" data-action="toggle-clue" data-idx="${i}">${clueTextHTML(c.text)}</div>`;
     });
@@ -775,6 +780,7 @@ document.addEventListener("click", e => {
 
   switch (action) {
     case "toggle-help":  showHelp = !showHelp; render(); break;
+    case "toggle-mobile-clues": mobileCluesOpen = !mobileCluesOpen; render(); break;
     case "toggle-clue": {
       const idx = parseInt(el.dataset.idx);
       const n = new Set(crossedClues);
