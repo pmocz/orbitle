@@ -66,12 +66,19 @@ body, html {
   margin: 0.55rem auto 0.45rem;
 }
 
-/* ── Help ── */
-.orbit-help-link {
+/* ── Top Popups ── */
+.orbit-top-buttons {
   position: fixed;
   top: 1rem;
-  right: 1rem;
   z-index: 20;
+  display: flex;
+  gap: 0.45rem;
+}
+
+.orbit-top-buttons.left { left: 1rem; }
+.orbit-top-buttons.right { right: 1rem; }
+
+.orbit-top-button {
   width: 34px;
   height: 34px;
   border: 1px solid rgba(107, 140, 184, 0.5);
@@ -88,27 +95,70 @@ body, html {
   transition: all 0.15s ease;
 }
 
-.orbit-help-link:hover,
-.orbit-help-link.active {
+.orbit-top-button:hover,
+.orbit-top-button.active {
   border-color: rgba(212, 166, 74, 0.7);
   color: #ffe89a;
   background: rgba(42, 34, 24, 0.88);
 }
 
-.orbit-help-content {
-  max-width: 600px;
-  width: 100%;
+.orbit-popup {
+  position: fixed;
+  top: 3.65rem;
+  z-index: 19;
+  width: min(360px, calc(100vw - 2rem));
   padding: 0.9rem 1rem;
   border: 1px solid #1a2238;
   border-radius: 6px;
   background: rgba(12, 16, 28, 0.85);
-  margin-bottom: 0.85rem;
+  backdrop-filter: blur(10px);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.28);
   font-size: 0.78rem;
   line-height: 1.6;
   color: #c0c8d8;
 }
 
+.orbit-help-content { left: 1rem; }
+.orbit-info-content { right: 1rem; }
+
 .orbit-help-content strong { color: #d4a64a; }
+
+.orbit-info-title {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 1rem;
+  letter-spacing: 0.04em;
+  color: #e0e6f0;
+}
+
+.orbit-info-subtitle {
+  color: #9cb8df;
+  margin-top: 0.25rem;
+}
+
+.orbit-info-share {
+  margin-top: 0.85rem;
+  padding: 0.45rem 0.7rem;
+  border: 1px solid rgba(107, 140, 184, 0.45);
+  border-radius: 5px;
+  background: rgba(26, 34, 56, 0.8);
+  color: #d8e2f2;
+  cursor: pointer;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.72rem;
+}
+
+.orbit-info-share:hover {
+  border-color: rgba(212, 166, 74, 0.68);
+  color: #ffe89a;
+}
+
+.orbit-info-copy {
+  margin-top: 1.25rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid rgba(107, 140, 184, 0.22);
+  color: #7f8faa;
+  font-size: 0.7rem;
+}
 
 /* ── Loading ── */
 .orbit-loading {

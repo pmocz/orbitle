@@ -436,6 +436,7 @@ let strikes = emptyStrikes();
 let selected = { cat: null, slot: null, mode: "place" };
 let status = "playing"; // playing | won | done
 let showHelp = false;
+let showInfo = false;
 let crossedClues = new Set();
 let pointerDrag = null;
 let suppressNextClick = null;
@@ -592,6 +593,15 @@ function handleNew() {
   resetGameState();
   render();
   setTimeout(() => { puzzle = generatePuzzleWithRetry(); loading = false; render(); }, 50);
+}
+
+function handleShareLink() {
+  const url = "https://orbitle.app";
+  if (navigator.share) {
+    navigator.share({ title: "Orbitle", text: "A game of celestial deduction", url }).catch(() => {});
+    return;
+  }
+  navigator.clipboard?.writeText(url);
 }
 
 // ============================================================
@@ -795,22 +805,35 @@ function render() {
   const app = document.getElementById("app");
   if (!app) return;
   let h = `<div class="orbit-root">`;
-  h += `<button class="orbit-help-link${showHelp ? " active" : ""}" data-action="toggle-help" aria-label="${showHelp ? "Hide help" : "Show help"}">?</button>`;
+  h += `<div class="orbit-top-buttons left">
+    <button class="orbit-top-button${showHelp ? " active" : ""}" data-action="toggle-help" aria-label="${showHelp ? "Hide help" : "Show help"}">?</button>
+  </div>
+  <div class="orbit-top-buttons right">
+    <button class="orbit-top-button${showInfo ? " active" : ""}" data-action="toggle-info" aria-label="${showInfo ? "Hide info" : "Show info"}">i</button>
+  </div>`;
 
   // Header
   h += `<header class="orbit-header">
     <h1 class="orbit-title">Orbitle</h1>
     <div class="orbit-subtitle">A game of celestial deduction</div>
-    <div class="orbit-divider"></div>
   </header>`;
 
   if (showHelp) {
-    h += `<div class="orbit-help-content">
+    h += `<div class="orbit-popup orbit-help-content">
       Four planets orbit a star. Each orbit holds a unique planet <strong>color</strong>, <strong>type</strong>,
       <strong>atmosphere</strong>, and <strong>moon count</strong>. Use the clues to deduce which attributes
       belong to which orbit. Every puzzle has exactly one solution reachable by pure logic.
       Drag or click tiles to an 'orbit', or 'rule out' a combination.
       Tap a clue to cross it off once you've used it.
+    </div>`;
+  }
+
+  if (showInfo) {
+    h += `<div class="orbit-popup orbit-info-content">
+      <div class="orbit-info-title">Orbitle</div>
+      <div class="orbit-info-subtitle">A game of celestial deduction</div>
+      <button class="orbit-info-share" data-action="share-link">Share link</button>
+      <div class="orbit-info-copy">Copyright 2026. All Rights Reserved.</div>
     </div>`;
   }
 
@@ -931,7 +954,9 @@ document.addEventListener("click", e => {
   const action = el.dataset.action;
 
   switch (action) {
-    case "toggle-help":  showHelp = !showHelp; render(); break;
+    case "toggle-help":  showHelp = !showHelp; if (showHelp) showInfo = false; render(); break;
+    case "toggle-info":  showInfo = !showInfo; if (showInfo) showHelp = false; render(); break;
+    case "share-link":   handleShareLink(); break;
     case "toggle-clue": {
       const idx = parseInt(el.dataset.idx);
       const n = new Set(crossedClues);
