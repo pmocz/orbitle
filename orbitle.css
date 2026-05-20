@@ -68,7 +68,7 @@ body, html {
 
 /* ── Top Popups ── */
 .orbit-top-buttons {
-  position: fixed;
+  position: absolute;
   top: 1rem;
   z-index: 20;
   display: flex;
@@ -79,13 +79,13 @@ body, html {
 .orbit-top-buttons.right { right: 1rem; }
 
 .orbit-top-button {
-  width: 34px;
-  height: 34px;
+  width: 30px;
+  height: 30px;
   border: 1px solid rgba(107, 140, 184, 0.5);
   border-radius: 50%;
   background: rgba(12, 16, 28, 0.82);
   color: #9cb8df;
-  font-size: 1rem;
+  font-size: 0.9rem;
   line-height: 1;
   cursor: pointer;
   font-family: 'JetBrains Mono', monospace;
@@ -103,7 +103,7 @@ body, html {
 }
 
 .orbit-popup {
-  position: fixed;
+  position: absolute;
   top: 3.65rem;
   z-index: 19;
   width: min(360px, calc(100vw - 2rem));
@@ -150,6 +150,11 @@ body, html {
 .orbit-info-share:hover {
   border-color: rgba(212, 166, 74, 0.68);
   color: #ffe89a;
+}
+
+.orbit-info-share.copied {
+  border-color: rgba(92, 184, 130, 0.68);
+  color: #c8f1d6;
 }
 
 .orbit-info-copy {
@@ -249,7 +254,7 @@ body, html {
   width: 100%;
   max-width: 600px;
   margin-bottom: 0.65rem;
-  padding: 1rem;
+  padding: 0.65rem 1rem 1rem;
   border: 1px solid #1a2238;
   border-radius: 6px;
   background: rgba(12, 16, 28, 0.7);

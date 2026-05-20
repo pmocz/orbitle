@@ -437,6 +437,8 @@ let selected = { cat: null, slot: null, mode: "place" };
 let status = "playing"; // playing | won | done
 let showHelp = false;
 let showInfo = false;
+let shareCopied = false;
+let shareCopiedTimer = null;
 let crossedClues = new Set();
 let pointerDrag = null;
 let suppressNextClick = null;
@@ -597,11 +599,15 @@ function handleNew() {
 
 function handleShareLink() {
   const url = "https://orbitle.app";
-  if (navigator.share) {
-    navigator.share({ title: "Orbitle", text: "A game of celestial deduction", url }).catch(() => {});
-    return;
-  }
+  if (shareCopiedTimer) clearTimeout(shareCopiedTimer);
+  shareCopied = true;
+  render();
   navigator.clipboard?.writeText(url);
+  shareCopiedTimer = setTimeout(() => {
+    shareCopied = false;
+    shareCopiedTimer = null;
+    render();
+  }, 1400);
 }
 
 // ============================================================
@@ -832,7 +838,7 @@ function render() {
     h += `<div class="orbit-popup orbit-info-content">
       <div class="orbit-info-title">Orbitle</div>
       <div class="orbit-info-subtitle">A game of celestial deduction</div>
-      <button class="orbit-info-share" data-action="share-link">Share link</button>
+      <button class="orbit-info-share${shareCopied ? " copied" : ""}" data-action="share-link">${shareCopied ? "link copied!" : "Share Orbitle"}</button>
       <div class="orbit-info-copy">Copyright 2026. All Rights Reserved.</div>
     </div>`;
   }
@@ -948,6 +954,14 @@ document.addEventListener("click", e => {
     if (!e.target.closest(".orbit-reveal-card")) { status = "done"; render(); return; }
   }
 
+  const strikeEl = e.target.closest("[data-strike-column='true']");
+  if (strikeEl) {
+    e.preventDefault();
+    e.stopPropagation();
+    handleStrikeSelect(parseInt(strikeEl.dataset.slot));
+    return;
+  }
+
   const el = e.target.closest("[data-action]");
   if (!el) return;
   if (el.dataset.action === "remove-value") e.stopPropagation();
@@ -955,7 +969,7 @@ document.addEventListener("click", e => {
 
   switch (action) {
     case "toggle-help":  showHelp = !showHelp; if (showHelp) showInfo = false; render(); break;
-    case "toggle-info":  showInfo = !showInfo; if (showInfo) showHelp = false; render(); break;
+    case "toggle-info":  showInfo = !showInfo; if (showInfo) showHelp = false; if (!showInfo) shareCopied = false; render(); break;
     case "share-link":   handleShareLink(); break;
     case "toggle-clue": {
       const idx = parseInt(el.dataset.idx);
