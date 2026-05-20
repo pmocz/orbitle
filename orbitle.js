@@ -587,7 +587,7 @@ const TILE_NAMES = CATEGORIES.flatMap(cat => cat.values.map((_, vi) => tileNameF
 function clueTextHTML(text) {
   const pattern = TILE_NAMES.map(name => escRegExp(escHTML(name))).join("|");
   return escHTML(text).replace(
-    new RegExp(`(^|[^A-Za-z0-9-])(${pattern})(?=[^A-Za-z0-9-]|$)`, "g"),
+    new RegExp(`(^|[^A-Za-z0-9-])(${pattern})(?=[^A-Za-z0-9]|$)`, "g"),
     `$1<strong class="orbit-clue-tile">$2</strong>`
   );
 }
