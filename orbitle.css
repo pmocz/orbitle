@@ -909,6 +909,15 @@ body.dragging-tile .orbit-option {
 .orbit-btn.secondary { border-color: #2a3550; color: #5a6a85; }
 .orbit-btn.gold { border-color: #d4a64a; color: #d4a64a; }
 .orbit-btn.gold:hover { background: rgba(212, 166, 74, 0.1); }
+.orbit-btn.share {
+  margin-bottom: 0.6rem;
+  border-color: rgba(107, 140, 184, 0.65);
+  color: #9cb8df;
+}
+.orbit-btn.share.copied {
+  border-color: rgba(92, 184, 130, 0.68);
+  color: #c8f1d6;
+}
 
 /* ── Win overlay ── */
 .orbit-reveal {

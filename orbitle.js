@@ -601,13 +601,20 @@ function handleShareLink() {
   const url = "https://orbitle.app";
   if (shareCopiedTimer) clearTimeout(shareCopiedTimer);
   shareCopied = true;
-  render();
+  updateShareButtons();
   navigator.clipboard?.writeText(url);
   shareCopiedTimer = setTimeout(() => {
     shareCopied = false;
     shareCopiedTimer = null;
-    render();
+    updateShareButtons();
   }, 1400);
+}
+
+function updateShareButtons() {
+  document.querySelectorAll("[data-action='share-link']").forEach(button => {
+    button.textContent = shareCopied ? "link copied!" : "Share Orbitle";
+    button.classList.toggle("copied", shareCopied);
+  });
 }
 
 // ============================================================
@@ -821,7 +828,6 @@ function render() {
   // Header
   h += `<header class="orbit-header">
     <h1 class="orbit-title">Orbitle</h1>
-    <div class="orbit-subtitle">A game of celestial deduction</div>
   </header>`;
 
   if (showHelp) {
@@ -922,6 +928,7 @@ function render() {
         <div class="orbit-reveal-copy">
           All observations reconciled. The star system stands revealed.
         </div>
+        <button class="orbit-btn share full${shareCopied ? " copied" : ""}" data-action="share-link">${shareCopied ? "link copied!" : "Share Orbitle"}</button>
         <button class="orbit-btn gold full" data-action="new-puzzle">Chart Another</button>
       </div>
     </div>`;
