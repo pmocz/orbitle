@@ -540,13 +540,20 @@ function toggleStrike(cat, slot, valIdx) {
   strikes = { ...strikes, [cat]: strikes[cat].map((s, i) => i === slot ? ns : s) };
 }
 
+function addStrike(cat, slot, valIdx) {
+  if (strikes[cat][slot].has(valIdx)) return;
+  const ns = new Set(strikes[cat][slot]);
+  ns.add(valIdx);
+  strikes = { ...strikes, [cat]: strikes[cat].map((s, i) => i === slot ? ns : s) };
+}
+
 function handleValuePick(cat, valIdx) {
   if (status !== "playing") return;
   const slot = selected.slot;
   if (slot === null) return;
 
   if (selected.mode === "strike") {
-    toggleStrike(cat, slot, valIdx);
+    addStrike(cat, slot, valIdx);
     selected = { cat: null, slot, mode: "place" };
   } else {
     placeValue(cat, slot, valIdx);
@@ -564,7 +571,7 @@ function handleTileDrop(cat, slot, valIdx) {
 function handleTileStrikeDrop(cat, slot, valIdx) {
   if (status !== "playing") return;
   selected = { cat: null, slot, mode: "strike" };
-  toggleStrike(cat, slot, valIdx);
+  addStrike(cat, slot, valIdx);
   render();
 }
 
