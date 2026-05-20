@@ -508,6 +508,10 @@ body, html {
   min-width: 0;
 }
 
+.orbit-tile-content span {
+  white-space: nowrap;
+}
+
 .orbit-tile-icon {
   width: 12px;
   height: 12px;
@@ -1023,5 +1027,8 @@ body.dragging-tile .orbit-option {
   .orbit-tile-tray { gap: 0.06rem; }
   .orbit-tile-row { padding: 0.18rem 0.25rem 0.18rem 0.55rem; }
   .orbit-tile-row::before { top: 0.22rem; bottom: 0.22rem; }
-  .orbit-option { font-size: 0.65rem; padding: 0.45rem 0.25rem; }
+  .orbit-options { gap: 0.25rem; }
+  .orbit-option { font-size: 0.62rem; gap: 0.25rem; padding: 0.45rem 0.15rem; }
+  .orbit-tile-content { gap: 4px; }
+  .orbit-option .orbit-tile-icon.moons { width: 11px; }
 }
