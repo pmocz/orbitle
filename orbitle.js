@@ -502,9 +502,70 @@ function checkWin(b) {
   if (!puzzle) return;
   if (!Object.values(b).every(arr => arr.every(v => v !== null))) return;
   if (CATEGORY_KEYS.every(c => b[c].every((v, i) => v === puzzle.solution[c][i]))) {
-    status = "won";
+    setWon();
     render();
   }
+}
+
+function randomItem(items) {
+  return items[Math.floor(Math.random() * items.length)];
+}
+
+function generateWinFlavorText() {
+  const adjectives = [
+    "small and luminous",
+    "quietly brilliant",
+    "beautifully patient",
+    "starlit",
+    "carefully tended",
+    "graceful",
+    "bright little",
+    "lovely",
+    "jubilant",
+    "quaint",
+  ];
+  const nouns = [
+    "star chart",
+    "orbit mystery",
+    "planet layout",
+    "stellar system",
+    "moonlit arrangement",
+    "stellar map",
+    "constellation of clues",
+    "system map",
+    "astronomical object",
+    "celestial knot",
+  ];
+  const verbs = [
+    "has settled into place",
+    "has been charted",
+    "has gently untangled itself",
+    "has been gently resolved",
+    "has been brought into focus",
+    "has opened up",
+    "has been brought into alignment",
+    "has revealed its shape",
+    "has been made clear",
+    "has been completed with care",
+  ];
+  const flourishes = [
+    "nicely done",
+    "the stars seem pleased",
+    "the observatory lights feel a little warmer",
+    "a fine bit of noticing",
+    "every moon has found a home",
+    "the telescope is resting easy",
+    "that was lovely thinking",
+    "the cosmos feels a little more knowable",
+    "your chart is complete",
+    "the night sky has opened its hand",
+  ];
+
+  return `This ${randomItem(adjectives)} ${randomItem(nouns)} ${randomItem(verbs)}; ${randomItem(flourishes)}.`;
+}
+
+function setWon() {
+  status = "won";
 }
 
 // ============================================================
@@ -935,7 +996,7 @@ function render() {
         <div class="orbit-reveal-sub">System charted</div>
         <div class="orbit-reveal-title">Solved</div>
         <div class="orbit-reveal-copy">
-          All observations reconciled. The star system stands revealed.
+          ${escHTML(generateWinFlavorText())}
         </div>
         <button class="orbit-btn share full${shareCopied ? " copied" : ""}" data-action="share-link">${shareCopied ? "link copied!" : "Share Orbitle"}</button>
         <button class="orbit-btn gold full" data-action="new-puzzle">Chart Another</button>
