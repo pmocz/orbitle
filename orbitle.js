@@ -442,6 +442,7 @@ let shareCopiedTimer = null;
 let crossedClues = new Set();
 let pointerDrag = null;
 let suppressNextClick = null;
+let mutedStrikeHoverSlot = null;
 let orbitAnimationStarted = false;
 let orbitAnimationEpoch = Date.now();
 const ORBIT_CENTER = { x: 300, y: 50 };
@@ -511,12 +512,20 @@ function checkWin(b) {
 // ============================================================
 function handleCellClick(slot) {
   if (status !== "playing") return;
+  mutedStrikeHoverSlot = null;
   selected = { cat: null, slot, mode: "place" };
   render();
 }
 
 function handleStrikeSelect(slot) {
   if (status !== "playing") return;
+  if (selected.slot === slot && selected.mode === "strike") {
+    selected = { cat: null, slot, mode: "place" };
+    mutedStrikeHoverSlot = slot;
+    render();
+    return;
+  }
+  mutedStrikeHoverSlot = null;
   selected = { cat: null, slot, mode: "strike" };
   render();
 }
@@ -573,7 +582,7 @@ function handleTileDrop(cat, slot, valIdx) {
 
 function handleTileStrikeDrop(cat, slot, valIdx) {
   if (status !== "playing") return;
-  selected = { cat: null, slot, mode: "strike" };
+  selected = { cat: null, slot, mode: "place" };
   addStrike(cat, slot, valIdx);
   render();
 }
@@ -879,7 +888,7 @@ function render() {
         h += `</div>`;
       });
       h += `</div>`;
-      h += `<div class="orbit-strike-drop${selected.slot === slot && selected.mode === "strike" ? " selected" : ""}" data-action="select-strike" data-strike-column="true" data-slot="${slot}">rule out</div>`;
+      h += `<div class="orbit-strike-drop${selected.slot === slot && selected.mode === "strike" ? " selected" : ""}${mutedStrikeHoverSlot === slot ? " hover-muted" : ""}" data-action="select-strike" data-strike-column="true" data-slot="${slot}">rule out</div>`;
       h += `</div>`;
     }
     h += `</div>`;
@@ -996,6 +1005,15 @@ document.addEventListener("click", e => {
       if (!e.target.closest(".orbit-reveal-card")) { status = "done"; render(); }
       break;
   }
+});
+
+document.addEventListener("pointerout", e => {
+  const strike = e.target.closest?.("[data-strike-column='true']");
+  if (!strike || strike.contains(e.relatedTarget)) return;
+  const slot = parseInt(strike.dataset.slot);
+  if (mutedStrikeHoverSlot !== slot) return;
+  mutedStrikeHoverSlot = null;
+  strike.classList.remove("hover-muted");
 });
 
 function clearDragHighlights() {
