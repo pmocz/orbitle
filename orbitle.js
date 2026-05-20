@@ -455,6 +455,8 @@ const ORBIT_SYSTEM_ORBITS = [
   ...orbit,
   duration: 8 * Math.pow(orbit.rx / 64, 1.5),
 }));
+const SHARE_URL = "https://orbitle.app";
+const SHARE_COPIED_MS = 1400;
 
 // ============================================================
 // HELPERS
@@ -467,10 +469,14 @@ function emptyStrikes() {
   return Object.fromEntries(CATEGORY_KEYS.map(key => [key, [new Set(), new Set(), new Set(), new Set()]]));
 }
 
+function selection(slot = null, mode = "place") {
+  return { cat: null, slot, mode };
+}
+
 function resetGameState() {
   board = emptyBoard();
   strikes = emptyStrikes();
-  selected = { cat: null, slot: null, mode: "place" };
+  selected = selection();
   status = "playing";
   crossedClues = new Set();
   pointerDrag = null;
@@ -574,20 +580,20 @@ function setWon() {
 function handleCellClick(slot) {
   if (status !== "playing") return;
   mutedStrikeHoverSlot = null;
-  selected = { cat: null, slot, mode: "place" };
+  selected = selection(slot);
   render();
 }
 
 function handleStrikeSelect(slot) {
   if (status !== "playing") return;
   if (selected.slot === slot && selected.mode === "strike") {
-    selected = { cat: null, slot, mode: "place" };
+    selected = selection(slot);
     mutedStrikeHoverSlot = slot;
     render();
     return;
   }
   mutedStrikeHoverSlot = null;
-  selected = { cat: null, slot, mode: "strike" };
+  selected = selection(slot, "strike");
   render();
 }
 
@@ -607,12 +613,6 @@ function placeValue(cat, slot, valIdx) {
   checkWin(board);
 }
 
-function toggleStrike(cat, slot, valIdx) {
-  const ns = new Set(strikes[cat][slot]);
-  ns.has(valIdx) ? ns.delete(valIdx) : ns.add(valIdx);
-  strikes = { ...strikes, [cat]: strikes[cat].map((s, i) => i === slot ? ns : s) };
-}
-
 function addStrike(cat, slot, valIdx) {
   if (strikes[cat][slot].has(valIdx)) return;
   const ns = new Set(strikes[cat][slot]);
@@ -627,7 +627,7 @@ function handleValuePick(cat, valIdx) {
 
   if (selected.mode === "strike") {
     addStrike(cat, slot, valIdx);
-    selected = { cat: null, slot, mode: "place" };
+    selected = selection(slot);
   } else {
     placeValue(cat, slot, valIdx);
   }
@@ -636,14 +636,14 @@ function handleValuePick(cat, valIdx) {
 
 function handleTileDrop(cat, slot, valIdx) {
   if (status !== "playing") return;
-  selected = { cat: null, slot, mode: "place" };
+  selected = selection(slot);
   placeValue(cat, slot, valIdx);
   render();
 }
 
 function handleTileStrikeDrop(cat, slot, valIdx) {
   if (status !== "playing") return;
-  selected = { cat: null, slot, mode: "place" };
+  selected = selection(slot);
   addStrike(cat, slot, valIdx);
   render();
 }
@@ -651,7 +651,7 @@ function handleTileStrikeDrop(cat, slot, valIdx) {
 function handleRemoveValue(cat, slot) {
   if (status !== "playing") return;
   board = { ...board, [cat]: board[cat].map((v, i) => i === slot ? null : v) };
-  selected = { cat: null, slot, mode: "place" };
+  selected = selection(slot);
   render();
 }
 
@@ -668,16 +668,15 @@ function handleNew() {
 }
 
 function handleShareLink() {
-  const url = "https://orbitle.app";
   if (shareCopiedTimer) clearTimeout(shareCopiedTimer);
   shareCopied = true;
   updateShareButtons();
-  navigator.clipboard?.writeText(url);
+  navigator.clipboard?.writeText(SHARE_URL);
   shareCopiedTimer = setTimeout(() => {
     shareCopied = false;
     shareCopiedTimer = null;
     updateShareButtons();
-  }, 1400);
+  }, SHARE_COPIED_MS);
 }
 
 function updateShareButtons() {
@@ -685,6 +684,10 @@ function updateShareButtons() {
     button.textContent = shareCopied ? "link copied!" : "Share Orbitle";
     button.classList.toggle("copied", shareCopied);
   });
+}
+
+function shareButtonHTML(className) {
+  return `<button class="${className}${shareCopied ? " copied" : ""}" data-action="share-link">${shareCopied ? "link copied!" : "Share Orbitle"}</button>`;
 }
 
 // ============================================================
@@ -914,7 +917,7 @@ function render() {
     h += `<div class="orbit-popup orbit-info-content">
       <div class="orbit-info-title">Orbitle</div>
       <div class="orbit-info-subtitle">A game of celestial deduction</div>
-      <button class="orbit-info-share${shareCopied ? " copied" : ""}" data-action="share-link">${shareCopied ? "link copied!" : "Share Orbitle"}</button>
+      ${shareButtonHTML("orbit-info-share")}
       <div class="orbit-info-copy">Copyright 2026. All Rights Reserved.</div>
     </div>`;
   }
@@ -998,7 +1001,7 @@ function render() {
         <div class="orbit-reveal-copy">
           ${escHTML(generateWinFlavorText())}
         </div>
-        <button class="orbit-btn share full${shareCopied ? " copied" : ""}" data-action="share-link">${shareCopied ? "link copied!" : "Share Orbitle"}</button>
+        ${shareButtonHTML("orbit-btn share full")}
         <button class="orbit-btn gold full" data-action="new-puzzle">Chart Another</button>
       </div>
     </div>`;
