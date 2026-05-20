@@ -795,13 +795,13 @@ function render() {
   const app = document.getElementById("app");
   if (!app) return;
   let h = `<div class="orbit-root">`;
+  h += `<button class="orbit-help-link${showHelp ? " active" : ""}" data-action="toggle-help" aria-label="${showHelp ? "Hide help" : "Show help"}">?</button>`;
 
   // Header
   h += `<header class="orbit-header">
     <h1 class="orbit-title">Orbitle</h1>
     <div class="orbit-subtitle">A game of celestial deduction</div>
     <div class="orbit-divider"></div>
-    <button class="orbit-help-link" data-action="toggle-help">${showHelp ? "Hide" : "How to play"}</button>
   </header>`;
 
   if (showHelp) {
