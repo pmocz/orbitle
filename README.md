@@ -1,5 +1,9 @@
 # orbitle
 
-A puzzle of celestial deduction
+https://orbitle.app/
 
-Philip Mocz (2026)
+A game of celestial deduction
+
+by Philip Mocz (@pmocz)
+
+2026
