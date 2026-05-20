@@ -439,6 +439,18 @@ let showHelp = false;
 let crossedClues = new Set();
 let pointerDrag = null;
 let suppressNextClick = null;
+let orbitAnimationStarted = false;
+let orbitAnimationEpoch = Date.now();
+const ORBIT_CENTER = { x: 300, y: 50 };
+const ORBIT_SYSTEM_ORBITS = [
+  { rx: 64, ry: 10, angle: 0, r: 5.5, phase: 0 },
+  { rx: 124, ry: 18, angle: 0, r: 6, phase: 0 },
+  { rx: 184, ry: 27, angle: 0, r: 6.6, phase: 0 },
+  { rx: 244, ry: 36, angle: 0, r: 7, phase: 0 },
+].map(orbit => ({
+  ...orbit,
+  duration: 8 * Math.pow(orbit.rx / 64, 1.5),
+}));
 
 // ============================================================
 // HELPERS
@@ -459,7 +471,19 @@ function resetGameState() {
   crossedClues = new Set();
   pointerDrag = null;
   suppressNextClick = null;
+  orbitAnimationStarted = false;
+  orbitAnimationEpoch = Date.now();
   document.body?.classList.remove("dragging-tile");
+}
+
+function boardHasPlacedTiles() {
+  return CATEGORY_KEYS.some(cat => board[cat].some(v => v !== null));
+}
+
+function startOrbitAnimationIfNeeded() {
+  if (orbitAnimationStarted || !boardHasPlacedTiles()) return;
+  orbitAnimationStarted = true;
+  orbitAnimationEpoch = Date.now();
 }
 
 function effectiveStrikes(cat, slot) {
@@ -503,6 +527,7 @@ function placeValue(cat, slot, valIdx) {
     next[cat][slot] = valIdx;
   }
   board = next;
+  startOrbitAnimationIfNeeded();
   const ns = new Set(strikes[cat][slot]);
   ns.delete(valIdx);
   strikes = { ...strikes, [cat]: strikes[cat].map((s, i) => i === slot ? ns : s) };
@@ -627,6 +652,131 @@ function optionHTML(cat, vi) {
   return "?";
 }
 
+function orbitAnimationTime() {
+  if (!orbitAnimationStarted) return 0;
+  return (Date.now() - orbitAnimationEpoch) / 1000;
+}
+
+function orbitProgress(duration, phase = 0) {
+  return ((orbitAnimationTime() + phase) % duration) / duration;
+}
+
+function ellipsePoint(rx, ry, angleDeg, progress, direction = 1) {
+  if (!orbitAnimationStarted) return { x: rx, y: 0 };
+  const angle = (angleDeg * Math.PI / 180) + direction * progress * Math.PI * 2;
+  return { x: rx * Math.cos(angle), y: ry * Math.sin(angle) };
+}
+
+function layerOpacity(layer, progress) {
+  const frontHalf = progress < 0.5;
+  if (layer === "front-star") return frontHalf ? 1 : 0;
+  if (layer === "behind-star") return frontHalf ? 0 : 1;
+  if (layer === "front") return frontHalf ? 1 : 0;
+  if (layer === "behind") return frontHalf ? 0 : 1;
+  return 1;
+}
+
+function updateOrbitSystemFrame() {
+  if (!document.querySelector(".orbit-system")) return;
+  ORBIT_SYSTEM_ORBITS.forEach((orbit, slot) => {
+    const progress = orbitProgress(orbit.duration, orbit.phase);
+    const point = ellipsePoint(orbit.rx, orbit.ry, orbit.angle, progress);
+    document.querySelectorAll(`[data-orbit-slot="${slot}"]`).forEach(el => {
+      el.setAttribute("transform", `translate(${(ORBIT_CENTER.x + point.x).toFixed(2)} ${(ORBIT_CENTER.y + point.y).toFixed(2)})`);
+      el.style.opacity = layerOpacity(el.dataset.orbitLayer, progress);
+      el.dataset.depth = String(point.y);
+    });
+
+    const moonDuration = 2.8 + slot * 0.45;
+    const moonRx = orbit.r + 5;
+    const moonRy = Math.max(3.2, orbit.r * 0.42);
+    document.querySelectorAll(`[data-moon-slot="${slot}"]`).forEach(el => {
+      const idx = parseInt(el.dataset.moonIndex);
+      const moonPhase = (idx / Math.max(1, parseInt(el.dataset.moonCount))) * moonDuration + slot * 0.35;
+      const moonProgress = orbitProgress(moonDuration, moonPhase);
+      const moonPoint = ellipsePoint(moonRx, moonRy, 0, moonProgress);
+      el.setAttribute("transform", `translate(${moonPoint.x.toFixed(2)} ${moonPoint.y.toFixed(2)})`);
+      el.style.opacity = layerOpacity(el.dataset.moonLayer, moonProgress);
+    });
+  });
+  sortOrbitPlanetLayer("behind-star");
+  sortOrbitPlanetLayer("front-star");
+}
+
+function sortOrbitPlanetLayer(layer) {
+  const container = document.querySelector(`[data-orbit-layer-container="${layer}"]`);
+  if (!container) return;
+  [...container.children]
+    .sort((a, b) => parseFloat(a.dataset.depth || "0") - parseFloat(b.dataset.depth || "0"))
+    .forEach(el => container.appendChild(el));
+}
+
+function animateOrbitSystem() {
+  updateOrbitSystemFrame();
+  requestAnimationFrame(animateOrbitSystem);
+}
+
+function orbitSystemPlanetHTML(slot, orbit, layer) {
+  const colorIdx = board.color[slot];
+  const planetIdx = board.planet[slot];
+  const atmosphereIdx = board.atmosphere[slot];
+  const moonsIdx = board.moons[slot];
+  const fill = colorIdx === null ? "#5f718d" : COLOR_HEX[COLORS[colorIdx]];
+  const planetClass = planetIdx === null ? "unknown" : String(PLANETS[planetIdx]).toLowerCase();
+  const atmosphereClass = atmosphereIdx === null ? "none" : String(ATMOSPHERES[atmosphereIdx]).toLowerCase();
+  const moonCount = moonsIdx === null ? 0 : MOONS[moonsIdx];
+  const moonOrbitRx = orbit.r + 5;
+  const moonOrbitRy = Math.max(3.2, orbit.r * 0.42);
+  const moonDuration = 2.8 + slot * 0.45;
+  const planetProgress = orbitProgress(orbit.duration, orbit.phase);
+  const planetPoint = ellipsePoint(orbit.rx, orbit.ry, orbit.angle, planetProgress);
+  const planetOpacity = layerOpacity(layer, planetProgress);
+  const moonLayerHTML = (moonLayer) => Array.from({ length: moonCount }, (_, i) => {
+    const moonPhase = (i / moonCount) * moonDuration + slot * 0.35;
+    const moonProgress = orbitProgress(moonDuration, moonPhase);
+    const moonPoint = ellipsePoint(moonOrbitRx, moonOrbitRy, 0, moonProgress);
+    const moonOpacity = layerOpacity(moonLayer, moonProgress);
+    return `<g class="orbit-system-moon-orbit ${moonLayer}" data-moon-slot="${slot}" data-moon-index="${i}" data-moon-count="${moonCount}" data-moon-layer="${moonLayer}" transform="translate(${moonPoint.x.toFixed(2)} ${moonPoint.y.toFixed(2)})" style="opacity:${moonOpacity}">
+      <circle class="orbit-system-moon" cx="0" cy="0" r="1.8" />
+    </g>`;
+  })
+    .join("");
+  const moonsBehindHTML = moonLayerHTML("behind");
+  const moonsFrontHTML = moonLayerHTML("front");
+
+  return `<g class="orbit-system-planet-group ${layer} planet-${planetClass} atmosphere-${atmosphereClass}" data-orbit-slot="${slot}" data-orbit-layer="${layer}" transform="translate(${(ORBIT_CENTER.x + planetPoint.x).toFixed(2)} ${(ORBIT_CENTER.y + planetPoint.y).toFixed(2)})" style="opacity:${planetOpacity}">
+    <circle class="orbit-system-glow" cx="0" cy="0" r="${orbit.r + 5.8}" />
+    ${moonsBehindHTML}
+    <circle class="orbit-system-planet" cx="0" cy="0" r="${orbit.r}" fill="${fill}" />
+    <path class="orbit-system-band" d="M${(-orbit.r * 0.9).toFixed(1)} 0 C${(-orbit.r * 0.35).toFixed(1)} ${(-orbit.r * 0.42).toFixed(1)} ${(orbit.r * 0.35).toFixed(1)} ${(-orbit.r * 0.42).toFixed(1)} ${(orbit.r * 0.9).toFixed(1)} 0" />
+    ${moonsFrontHTML}
+  </g>`;
+}
+
+function orbitSystemHTML() {
+  const ringsHTML = ORBIT_SYSTEM_ORBITS
+    .map((orbit, i) => `<ellipse class="orbit-system-ring ring-${i + 1}" cx="300" cy="50" rx="${orbit.rx}" ry="${orbit.ry}" />`)
+    .join("");
+  const labelsHTML = orbitAnimationStarted ? "" : ORBIT_SYSTEM_ORBITS
+    .map((orbit, i) => `<text class="orbit-system-label" x="${ORBIT_CENTER.x + orbit.rx}" y="74">${i + 1}</text>`)
+    .join("");
+  const planetsBehindHTML = ORBIT_SYSTEM_ORBITS
+    .map((orbit, slot) => orbitSystemPlanetHTML(slot, orbit, "behind-star"))
+    .join("");
+  const planetsFrontHTML = ORBIT_SYSTEM_ORBITS
+    .map((orbit, slot) => orbitSystemPlanetHTML(slot, orbit, "front-star"))
+    .join("");
+
+  return `<svg class="orbit-system" viewBox="0 0 600 100" aria-hidden="true">
+    ${ringsHTML}
+    <g class="orbit-system-planet-layer behind-star" data-orbit-layer-container="behind-star">${planetsBehindHTML}</g>
+    <circle class="orbit-system-star-glow" cx="300" cy="50" r="18" />
+    <circle class="orbit-system-star" cx="300" cy="50" r="8" />
+    <g class="orbit-system-planet-layer front-star" data-orbit-layer-container="front-star">${planetsFrontHTML}</g>
+    ${labelsHTML}
+  </svg>`;
+}
+
 function tileIsPlaced(cat, vi) {
   return board[cat].includes(vi);
 }
@@ -667,6 +817,7 @@ function render() {
 
     // Board
     h += `<div class="orbit-board">`;
+    h += orbitSystemHTML();
     h += `<div class="orbit-columns">`;
     for (let slot = 0; slot < 4; slot++) {
       h += `<div class="orbit-column${selected.slot === slot ? " selected" : ""}" data-action="select-column" data-slot="${slot}" data-drop-column="true">`;
@@ -742,6 +893,7 @@ function render() {
 
   h += `</div>`; // end orbit-root
   app.innerHTML = h;
+  updateOrbitSystemFrame();
 }
 
 // ============================================================
@@ -982,4 +1134,5 @@ function initStarfield() {
 // ============================================================
 initStarfield();
 render();
+animateOrbitSystem();
 setTimeout(() => { puzzle = generatePuzzleWithRetry(); loading = false; render(); }, 50);
