@@ -963,6 +963,70 @@ body.dragging-tile .orbit-option {
   color: #c8f1d6;
 }
 
+.orbit-share-box {
+  position: relative;
+  margin-top: 0.75rem;
+}
+
+.orbit-share-preview {
+  padding: 0.75rem;
+  width: 100%;
+  border: 1px solid rgba(107, 140, 184, 0.25);
+  border-radius: 5px;
+  background: rgba(6, 8, 15, 0.42);
+  color: #c0c8d8;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.72rem;
+  line-height: 1.45;
+  text-align: left;
+  white-space: pre-wrap;
+  resize: none;
+  user-select: text;
+}
+
+.orbit-share-copy {
+  position: absolute;
+  top: 0.45rem;
+  right: 0.45rem;
+  width: 25px;
+  height: 25px;
+  border: 1px solid rgba(107, 140, 184, 0.42);
+  border-radius: 4px;
+  background: rgba(12, 16, 28, 0.88);
+  color: #9cb8df;
+  cursor: pointer;
+  font-size: 0.82rem;
+  line-height: 1;
+}
+
+.orbit-share-copy:hover {
+  border-color: rgba(212, 166, 74, 0.68);
+  color: #ffe89a;
+}
+
+.orbit-share-copy::after {
+  content: "copied!";
+  position: absolute;
+  right: 0;
+  top: -1.75rem;
+  padding: 0.25rem 0.4rem;
+  border: 1px solid rgba(92, 184, 130, 0.5);
+  border-radius: 4px;
+  background: rgba(12, 16, 28, 0.95);
+  color: #c8f1d6;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.58rem;
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(3px);
+  transition: opacity 0.12s ease, transform 0.12s ease;
+}
+
+.orbit-share-copy.copied::after {
+  opacity: 1;
+  transform: translateY(0);
+}
+
 /* ── Win overlay ── */
 .orbit-reveal {
   position: fixed;

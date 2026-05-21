@@ -500,7 +500,11 @@ let showHelp = false;
 let showInfo = false;
 let shareCopied = false;
 let shareCopiedTimer = null;
+let resultCopied = false;
+let resultCopiedTimer = null;
 let crossedClues = new Set();
+let placementOrder = [];
+let placementSeq = 0;
 let pointerDrag = null;
 let suppressNextClick = null;
 let mutedStrikeHoverSlot = null;
@@ -519,7 +523,15 @@ const ORBIT_SYSTEM_ORBITS = [
 const SHARE_URL = "https://orbitle.app";
 const SHARE_COPIED_MS = 1400;
 const SOLVED_STORAGE_PREFIX = "orbitle-solved-";
+const RESULT_STORAGE_PREFIX = "orbitle-result-";
 const GAMES_PLAYED_KEY = "orbitle-games-played";
+const PUZZLE_NUMBER_EPOCH = Date.UTC(2026, 0, 1);
+const CATEGORY_SHARE_SQUARES = {
+  color: "⬜",
+  planet: "🟧",
+  atmosphere: "🟩",
+  moons: "🟪",
+};
 
 // ============================================================
 // HELPERS
@@ -542,6 +554,8 @@ function resetGameState() {
   selected = selection();
   status = "playing";
   crossedClues = new Set();
+  placementOrder = [];
+  placementSeq = 0;
   pointerDrag = null;
   suppressNextClick = null;
   orbitAnimationStarted = false;
@@ -561,6 +575,10 @@ function startOrbitAnimationIfNeeded() {
 
 function solvedKey(puzzleId = currentPuzzleId) {
   return `${SOLVED_STORAGE_PREFIX}${puzzleId}`;
+}
+
+function resultKey(puzzleId = currentPuzzleId) {
+  return `${RESULT_STORAGE_PREFIX}${puzzleId}`;
 }
 
 function markPuzzleSolved() {
@@ -584,6 +602,26 @@ function gamesPlayed() {
     return parseInt(localStorage.getItem(GAMES_PLAYED_KEY) || "0", 10) || 0;
   } catch (_) {
     return 0;
+  }
+}
+
+function puzzleNumber(puzzleId = currentPuzzleId) {
+  const [year, month, day] = puzzleId.split("-").map(Number);
+  const date = Date.UTC(year, month - 1, day);
+  return Math.max(1, Math.floor((date - PUZZLE_NUMBER_EPOCH) / 86400000) + 1);
+}
+
+function saveShareResult(text) {
+  try {
+    localStorage.setItem(resultKey(), text);
+  } catch (_) {}
+}
+
+function storedShareResult() {
+  try {
+    return localStorage.getItem(resultKey()) || "";
+  } catch (_) {
+    return "";
   }
 }
 
@@ -612,6 +650,50 @@ function checkWin(b) {
     setWon();
     render();
   }
+}
+
+function tileKey(cat, valIdx) {
+  return `${cat}:${valIdx}`;
+}
+
+function removePlacement(cat, valIdx) {
+  const key = tileKey(cat, valIdx);
+  placementOrder = placementOrder.filter(item => item.key !== key);
+}
+
+function recordPlacement(cat, valIdx, slot) {
+  removePlacement(cat, valIdx);
+  placementOrder.push({ key: tileKey(cat, valIdx), cat, valIdx, slot, order: ++placementSeq });
+}
+
+function finalPlacementOrder() {
+  const placedKeys = new Set();
+  CATEGORY_KEYS.forEach(cat => {
+    board[cat].forEach(valIdx => {
+      if (valIdx !== null) placedKeys.add(tileKey(cat, valIdx));
+    });
+  });
+
+  const ordered = placementOrder.filter(item => placedKeys.has(item.key));
+  const orderedKeys = new Set(ordered.map(item => item.key));
+  CATEGORY_KEYS.forEach(cat => {
+    board[cat].forEach((valIdx, slot) => {
+      if (valIdx === null || orderedKeys.has(tileKey(cat, valIdx))) return;
+      ordered.push({ key: tileKey(cat, valIdx), cat, valIdx, slot, order: Number.MAX_SAFE_INTEGER });
+    });
+  });
+  return ordered.slice(0, 16);
+}
+
+function buildShareResultText() {
+  const squares = finalPlacementOrder().map(item => CATEGORY_SHARE_SQUARES[item.cat] || "■");
+  while (squares.length < 16) squares.push("□");
+  const rows = [0, 4, 8, 12].map(start => squares.slice(start, start + 4).join("")).join("\n");
+  return `Orbitle #${puzzleNumber()}\n${rows}\n${SHARE_URL}`;
+}
+
+function shareResultText() {
+  return storedShareResult() || buildShareResultText();
 }
 
 function randomItem(items) {
@@ -677,6 +759,7 @@ function setWon() {
     orbitAnimationStarted = true;
     orbitAnimationEpoch = Date.now();
   }
+  saveShareResult(buildShareResultText());
   markPuzzleSolved();
 }
 
@@ -707,9 +790,12 @@ function placeValue(cat, slot, valIdx) {
   const next = { ...board, [cat]: [...board[cat]] };
   if (next[cat][slot] === valIdx) {
     next[cat][slot] = null;
+    removePlacement(cat, valIdx);
   } else {
+    if (next[cat][slot] !== null) removePlacement(cat, next[cat][slot]);
     for (let i = 0; i < 4; i++) { if (next[cat][i] === valIdx) next[cat][i] = null; }
     next[cat][slot] = valIdx;
+    recordPlacement(cat, valIdx, slot);
   }
   board = next;
   startOrbitAnimationIfNeeded();
@@ -756,6 +842,7 @@ function handleTileStrikeDrop(cat, slot, valIdx) {
 
 function handleRemoveValue(cat, slot) {
   if (status !== "playing") return;
+  if (board[cat][slot] !== null) removePlacement(cat, board[cat][slot]);
   board = { ...board, [cat]: board[cat].map((v, i) => i === slot ? null : v) };
   selected = selection(slot);
   render();
@@ -776,6 +863,24 @@ function handleShareLink() {
     shareCopiedTimer = null;
     updateShareButtons();
   }, SHARE_COPIED_MS);
+}
+
+function handleShareResult() {
+  const text = shareResultText();
+  const intentUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}`;
+  window.open(intentUrl, "_blank", "noopener,noreferrer");
+}
+
+function handleCopyResult() {
+  if (resultCopiedTimer) clearTimeout(resultCopiedTimer);
+  resultCopied = true;
+  navigator.clipboard?.writeText(shareResultText());
+  updateResultCopyButton();
+  resultCopiedTimer = setTimeout(() => {
+    resultCopied = false;
+    resultCopiedTimer = null;
+    updateResultCopyButton();
+  }, 1200);
 }
 
 function updateShareButtons() {
@@ -808,6 +913,17 @@ function tickDailyClock() {
 
 function shareButtonHTML(className) {
   return `<button class="${className}${shareCopied ? " copied" : ""}" data-action="share-link">${shareCopied ? "link copied!" : "Share Orbitle"}</button>`;
+}
+
+function resultShareButtonHTML(className) {
+  return `<button class="${className}" data-action="share-result">Share result</button>`;
+}
+
+function updateResultCopyButton() {
+  document.querySelectorAll("[data-action='copy-result']").forEach(button => {
+    button.classList.toggle("copied", resultCopied);
+    button.setAttribute("aria-label", resultCopied ? "Copied" : "Copy result");
+  });
 }
 
 function helpPopupHTML() {
@@ -1139,7 +1255,11 @@ function render() {
           <div class="orbit-countdown-label">Next puzzle in</div>
           <div class="orbit-countdown" data-countdown>${countdownText()}</div>
         </div>
-        ${shareButtonHTML("orbit-btn share full")}
+        ${resultShareButtonHTML("orbit-btn share full")}
+        <div class="orbit-share-box">
+          <button class="orbit-share-copy${resultCopied ? " copied" : ""}" data-action="copy-result" aria-label="${resultCopied ? "Copied" : "Copy result"}">⧉</button>
+          <textarea class="orbit-share-preview" readonly rows="7">${escHTML(shareResultText())}</textarea>
+        </div>
       </div>
     </div>`;
   }
@@ -1193,6 +1313,8 @@ document.addEventListener("click", e => {
       updateTopPopups();
       break;
     case "share-link":   handleShareLink(); break;
+    case "share-result": handleShareResult(); break;
+    case "copy-result":  handleCopyResult(); break;
     case "toggle-clue": {
       const idx = parseInt(el.dataset.idx);
       const n = new Set(crossedClues);
