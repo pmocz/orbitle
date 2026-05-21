@@ -629,10 +629,16 @@ function loadDailyPuzzle() {
   currentPuzzleId = utcPuzzleId();
   puzzle = generateDailyPuzzle(currentPuzzleId);
   status = isPuzzleSolved() ? "won" : "playing";
+  if (status === "won") board = solvedBoard();
   if (status === "won" && !orbitAnimationStarted) {
     orbitAnimationStarted = true;
     orbitAnimationEpoch = Date.now();
   }
+}
+
+function solvedBoard() {
+  if (!puzzle) return emptyBoard();
+  return Object.fromEntries(CATEGORY_KEYS.map(cat => [cat, [...puzzle.solution[cat]]]));
 }
 
 function effectiveStrikes(cat, slot) {
