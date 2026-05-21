@@ -525,6 +525,7 @@ const SHARE_COPIED_MS = 1400;
 const SOLVED_STORAGE_PREFIX = "orbitle-solved-";
 const RESULT_STORAGE_PREFIX = "orbitle-result-";
 const GAMES_PLAYED_KEY = "orbitle-games-played";
+const TUTORIAL_SEEN_KEY = "orbitle-tutorial-seen";
 const PUZZLE_NUMBER_EPOCH = Date.UTC(2026, 0, 1);
 const CATEGORY_SHARE_SQUARES = {
   color: "⬜",
@@ -603,6 +604,20 @@ function gamesPlayed() {
   } catch (_) {
     return 0;
   }
+}
+
+function hasSeenTutorial() {
+  try {
+    return localStorage.getItem(TUTORIAL_SEEN_KEY) === "1";
+  } catch (_) {
+    return true;
+  }
+}
+
+function markTutorialSeen() {
+  try {
+    localStorage.setItem(TUTORIAL_SEEN_KEY, "1");
+  } catch (_) {}
 }
 
 function puzzleNumber(puzzleId = currentPuzzleId) {
@@ -934,11 +949,57 @@ function updateResultCopyButton() {
 
 function helpPopupHTML() {
   return `<div class="orbit-popup orbit-help-content">
-    Four planets orbit a star. Each orbit holds a unique planet <strong>color</strong>, <strong>type</strong>,
-    <strong>atmosphere</strong>, and <strong>moon count</strong>. Use the clues to deduce which attributes
-    belong to which orbit. Every puzzle has exactly one solution reachable by pure logic.
-    Drag or click tiles to an 'orbit', or 'rule out' a combination.
-    Tap a clue to cross it off once you've used it.
+    <div class="orbit-help-title">How to Play</div>
+    <div class="orbit-help-copy">
+      Use the observations to deduce each planet's <strong>color</strong>, <strong>type</strong>,
+      <strong>atmosphere</strong>, and <strong>moon count</strong>.
+    </div>
+    <div class="orbit-help-graphic" aria-hidden="true">
+      <div class="orbit-help-clue">The Amber-colored planet is immediately inward of the 1-moon planet.</div>
+      <div class="orbit-help-demo">
+        <div class="orbit-help-board orbit-columns">
+          <div class="orbit-column">
+            <div class="orbit-header-cell">Orbit 1</div>
+            <div class="orbit-column-values">
+              <div class="orbit-cell color orbit-help-fill-amber">${cellContentHTML("color", 1)}</div>
+              <div class="orbit-cell moons empty">·</div>
+            </div>
+            <div class="orbit-strike-drop">rule out</div>
+          </div>
+          <div class="orbit-column">
+            <div class="orbit-header-cell">Orbit 2</div>
+            <div class="orbit-column-values">
+              <div class="orbit-cell color empty">·</div>
+              <div class="orbit-cell moons orbit-help-fill-moon">${cellContentHTML("moons", 1)}</div>
+            </div>
+            <div class="orbit-strike-drop">rule out</div>
+          </div>
+        </div>
+        <div class="orbit-help-picker orbit-picker">
+          <div class="orbit-tile-tray">
+            <div class="orbit-tile-row color">
+              <div class="orbit-options">
+                <div class="orbit-option orbit-help-pick">${optionHTML("color", 0)}</div>
+                <div class="orbit-option orbit-help-pick">${optionHTML("color", 1)}</div>
+              </div>
+            </div>
+            <div class="orbit-tile-row moons">
+              <div class="orbit-options">
+                <div class="orbit-option orbit-help-pick">${optionHTML("moons", 0)}</div>
+                <div class="orbit-option orbit-help-pick">${optionHTML("moons", 1)}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="orbit-help-drag orbit-help-drag-amber">${optionHTML("color", 1)}</div>
+        <div class="orbit-help-drag orbit-help-drag-moon">${optionHTML("moons", 1)}</div>
+      </div>
+    </div>
+    <div class="orbit-help-copy">
+      Drag or click a tile into an orbit to place it. Use <strong class="orbit-help-ruleout-text">rule out</strong> for combinations you know cannot work.
+      Tap an observation to cross it off after you use it.
+    </div>
+    <button class="orbit-help-start" data-action="start-help">Play</button>
   </div>`;
 }
 
@@ -1308,14 +1369,23 @@ document.addEventListener("click", e => {
 
   switch (action) {
     case "toggle-help":
+      if (showHelp) markTutorialSeen();
       showHelp = !showHelp;
-      if (showHelp) showInfo = false;
+      if (showHelp) {
+        showInfo = false;
+      }
       updateTopPopups();
       break;
     case "toggle-info":
+      if (showHelp) markTutorialSeen();
       showInfo = !showInfo;
       if (showInfo) showHelp = false;
       if (!showInfo) shareCopied = false;
+      updateTopPopups();
+      break;
+    case "start-help":
+      markTutorialSeen();
+      showHelp = false;
       updateTopPopups();
       break;
     case "share-link":   handleShareLink(); break;
@@ -1534,6 +1604,7 @@ function initStarfield() {
 // INIT
 // ============================================================
 initStarfield();
+showHelp = !hasSeenTutorial();
 render();
 animateOrbitSystem();
 setInterval(tickDailyClock, 1000);
