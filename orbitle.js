@@ -524,6 +524,7 @@ const SHARE_URL = "https://orbitle.app";
 const SHARE_COPIED_MS = 1400;
 const SOLVED_STORAGE_PREFIX = "orbitle-solved-";
 const RESULT_STORAGE_PREFIX = "orbitle-result-";
+const ATTEMPT_STORAGE_PREFIX = "orbitle-attempt-";
 const GAMES_PLAYED_KEY = "orbitle-games-played";
 const TUTORIAL_SEEN_KEY = "orbitle-tutorial-seen";
 const PUZZLE_NUMBER_EPOCH = Date.UTC(2026, 0, 1);
@@ -582,10 +583,15 @@ function resultKey(puzzleId = currentPuzzleId) {
   return `${RESULT_STORAGE_PREFIX}${puzzleId}`;
 }
 
+function attemptKey(puzzleId = currentPuzzleId) {
+  return `${ATTEMPT_STORAGE_PREFIX}${puzzleId}`;
+}
+
 function markPuzzleSolved() {
   try {
     const wasSolved = isPuzzleSolved();
     localStorage.setItem(solvedKey(), "1");
+    localStorage.removeItem(attemptKey());
     if (!wasSolved) localStorage.setItem(GAMES_PLAYED_KEY, String(gamesPlayed() + 1));
   } catch (_) {}
 }
@@ -640,11 +646,114 @@ function storedShareResult() {
   }
 }
 
+function validValIdx(v) {
+  return Number.isInteger(v) && v >= 0 && v < 4;
+}
+
+function restoreBoard(savedBoard) {
+  const restored = emptyBoard();
+  if (!savedBoard || typeof savedBoard !== "object") return restored;
+  CATEGORY_KEYS.forEach(cat => {
+    if (!Array.isArray(savedBoard[cat])) return;
+    for (let slot = 0; slot < 4; slot++) {
+      const v = savedBoard[cat][slot];
+      restored[cat][slot] = v === null || validValIdx(v) ? v : null;
+    }
+  });
+  return restored;
+}
+
+function restoreStrikes(savedStrikes) {
+  const restored = emptyStrikes();
+  if (!savedStrikes || typeof savedStrikes !== "object") return restored;
+  CATEGORY_KEYS.forEach(cat => {
+    if (!Array.isArray(savedStrikes[cat])) return;
+    for (let slot = 0; slot < 4; slot++) {
+      const values = Array.isArray(savedStrikes[cat][slot]) ? savedStrikes[cat][slot] : [];
+      restored[cat][slot] = new Set(values.filter(validValIdx));
+    }
+  });
+  return restored;
+}
+
+function restoreCrossedClues(savedCrossed) {
+  const maxClues = puzzle?.clues?.length || 0;
+  const values = Array.isArray(savedCrossed) ? savedCrossed : [];
+  return new Set(values.filter(idx => Number.isInteger(idx) && idx >= 0 && idx < maxClues));
+}
+
+function restorePlacementOrder(savedOrder) {
+  const placedKeys = new Set();
+  CATEGORY_KEYS.forEach(cat => {
+    board[cat].forEach(valIdx => {
+      if (valIdx !== null) placedKeys.add(tileKey(cat, valIdx));
+    });
+  });
+
+  const values = Array.isArray(savedOrder) ? savedOrder : [];
+  placementOrder = values
+    .filter(item => item && CATEGORY_KEYS.includes(item.cat) && validValIdx(item.valIdx) && validValIdx(item.slot))
+    .map(item => ({
+      key: tileKey(item.cat, item.valIdx),
+      cat: item.cat,
+      valIdx: item.valIdx,
+      slot: item.slot,
+      order: Number.isFinite(item.order) ? item.order : 0,
+    }))
+    .filter(item => placedKeys.has(item.key) && board[item.cat][item.slot] === item.valIdx)
+    .sort((a, b) => a.order - b.order);
+  placementSeq = placementOrder.reduce((max, item) => Math.max(max, item.order), 0);
+}
+
+function attemptPayload() {
+  return {
+    board,
+    strikes: Object.fromEntries(CATEGORY_KEYS.map(cat => [
+      cat,
+      strikes[cat].map(set => [...set]),
+    ])),
+    crossedClues: [...crossedClues],
+    placementOrder,
+  };
+}
+
+function saveAttempt() {
+  if (status !== "playing") return;
+  try {
+    localStorage.setItem(attemptKey(), JSON.stringify(attemptPayload()));
+  } catch (_) {}
+}
+
+function clearAttempt(puzzleId = currentPuzzleId) {
+  try {
+    localStorage.removeItem(attemptKey(puzzleId));
+  } catch (_) {}
+}
+
+function loadSavedAttempt() {
+  try {
+    const raw = localStorage.getItem(attemptKey());
+    if (!raw) return;
+    const saved = JSON.parse(raw);
+    board = restoreBoard(saved.board);
+    strikes = restoreStrikes(saved.strikes);
+    crossedClues = restoreCrossedClues(saved.crossedClues);
+    restorePlacementOrder(saved.placementOrder);
+    startOrbitAnimationIfNeeded();
+  } catch (_) {
+    clearAttempt();
+  }
+}
+
 function loadDailyPuzzle() {
   currentPuzzleId = utcPuzzleId();
   puzzle = generateDailyPuzzle(currentPuzzleId);
   status = isPuzzleSolved() ? "won" : "playing";
-  if (status === "won") board = solvedBoard();
+  if (status === "won") {
+    board = solvedBoard();
+  } else {
+    loadSavedAttempt();
+  }
   if (status === "won" && !orbitAnimationStarted) {
     orbitAnimationStarted = true;
     orbitAnimationEpoch = Date.now();
@@ -717,11 +826,12 @@ function shareResultText() {
   return storedShareResult() || buildShareResultText();
 }
 
-function randomItem(items) {
-  return items[Math.floor(Math.random() * items.length)];
+function randomItem(items, rng = Math.random) {
+  return items[Math.floor(rng() * items.length)];
 }
 
-function generateWinFlavorText() {
+function generateWinFlavorText(puzzleId = currentPuzzleId) {
+  const rng = seededRandom(seedFromString(`win-flavor:${puzzleId}`));
   const adjectives = [
     "small and luminous",
     "quietly brilliant",
@@ -771,7 +881,7 @@ function generateWinFlavorText() {
     "the night sky has opened its hand",
   ];
 
-  return `This ${randomItem(adjectives)} ${randomItem(nouns)} ${randomItem(verbs)}; ${randomItem(flourishes)}.`;
+  return `This ${randomItem(adjectives, rng)} ${randomItem(nouns, rng)} ${randomItem(verbs, rng)}; ${randomItem(flourishes, rng)}.`;
 }
 
 function setWon() {
@@ -824,6 +934,7 @@ function placeValue(cat, slot, valIdx) {
   ns.delete(valIdx);
   strikes = { ...strikes, [cat]: strikes[cat].map((s, i) => i === slot ? ns : s) };
   checkWin(board);
+  saveAttempt();
 }
 
 function addStrike(cat, slot, valIdx) {
@@ -831,6 +942,7 @@ function addStrike(cat, slot, valIdx) {
   const ns = new Set(strikes[cat][slot]);
   ns.add(valIdx);
   strikes = { ...strikes, [cat]: strikes[cat].map((s, i) => i === slot ? ns : s) };
+  saveAttempt();
 }
 
 function handleValuePick(cat, valIdx) {
@@ -866,11 +978,13 @@ function handleRemoveValue(cat, slot) {
   if (board[cat][slot] !== null) removePlacement(cat, board[cat][slot]);
   board = { ...board, [cat]: board[cat].map((v, i) => i === slot ? null : v) };
   selected = selection(slot);
+  saveAttempt();
   render();
 }
 
 function handleClear() {
   resetGameState();
+  clearAttempt();
   render();
 }
 
@@ -1009,6 +1123,10 @@ function infoPopupHTML() {
     <button class="orbit-popup-close" data-action="close-popup" aria-label="Close popup">×</button>
     <div class="orbit-info-title">Orbitle</div>
     <div class="orbit-info-subtitle">A game of celestial deduction</div>
+    <div class="orbit-info-stat">
+      <span>Daily puzzle</span>
+      <strong>Orbitle #${puzzleNumber()}</strong>
+    </div>
     <div class="orbit-info-stat">
       <span>Games played</span>
       <strong>${gamesPlayed()}</strong>
@@ -1324,7 +1442,7 @@ function render() {
   if (status === "won") {
     h += `<div class="orbit-reveal">
       <div class="orbit-reveal-card">
-        <div class="orbit-reveal-sub">System charted</div>
+        <div class="orbit-reveal-sub">Orbitle #${puzzleNumber()}</div>
         <div class="orbit-reveal-system">${orbitSystemHTML(false)}</div>
         <div class="orbit-reveal-title">Solved</div>
         <div class="orbit-reveal-copy">
@@ -1415,6 +1533,7 @@ document.addEventListener("click", e => {
       const n = new Set(crossedClues);
       n.has(idx) ? n.delete(idx) : n.add(idx);
       crossedClues = n;
+      saveAttempt();
       render();
       break;
     }
@@ -1424,6 +1543,15 @@ document.addEventListener("click", e => {
     case "remove-value": handleRemoveValue(el.dataset.cat, parseInt(el.dataset.slot)); break;
     case "clear":      handleClear(); break;
   }
+});
+
+document.addEventListener("keydown", e => {
+  if (e.key !== "Escape" || (!showHelp && !showInfo)) return;
+  if (showHelp) markTutorialSeen();
+  showHelp = false;
+  showInfo = false;
+  shareCopied = false;
+  updateTopPopups();
 });
 
 document.addEventListener("pointerout", e => {
