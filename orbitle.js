@@ -1070,6 +1070,7 @@ function render() {
 
     // Board
     h += `<div class="orbit-board">`;
+    h += `<button class="orbit-clear-icon" data-action="clear" aria-label="Clear board">↻</button>`;
     h += orbitSystemHTML();
     h += `<div class="orbit-columns">`;
     for (let slot = 0; slot < 4; slot++) {
@@ -1120,11 +1121,6 @@ function render() {
       h += `<div class="orbit-clue${crossedClues.has(i) ? " crossed" : ""}" data-action="toggle-clue" data-idx="${i}">${clueTextHTML(c.text)}</div>`;
     });
     h += `</div>`;
-
-    // Actions
-    h += `<div class="orbit-actions">
-      <button class="orbit-btn secondary" data-action="clear">Clear</button>
-    </div>`;
 
     h += `</div>`; // end game layout
   }

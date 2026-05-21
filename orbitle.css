@@ -196,8 +196,7 @@ body, html {
 
 /* ── Clues ── */
 .orbit-game-layout,
-.orbit-play-area,
-.orbit-actions {
+.orbit-play-area {
   width: 100%;
   max-width: 600px;
 }
@@ -281,6 +280,33 @@ body, html {
   position: relative;
   overflow: hidden;
   user-select: none;
+}
+
+.orbit-clear-icon {
+  position: absolute;
+  top: 0.55rem;
+  right: 0.65rem;
+  z-index: 2;
+  width: 28px;
+  height: 28px;
+  border: 1px solid rgba(107, 140, 184, 0.45);
+  border-radius: 50%;
+  background: rgba(12, 16, 28, 0.72);
+  color: #8fa3c4;
+  cursor: pointer;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 1rem;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s ease;
+}
+
+.orbit-clear-icon:hover {
+  border-color: rgba(212, 166, 74, 0.68);
+  color: #ffe89a;
+  background: rgba(42, 34, 24, 0.82);
 }
 
 .orbit-columns {
@@ -906,12 +932,6 @@ body.dragging-tile .orbit-option {
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35), 0 0 18px rgba(212, 166, 74, 0.22);
 }
 
-/* ── Actions ── */
-.orbit-actions {
-  display: flex;
-  gap: 0.5rem;
-}
-
 .orbit-btn {
   flex: 1;
   padding: 0.75rem;
@@ -1039,8 +1059,7 @@ body.dragging-tile .orbit-option {
     display: grid;
     grid-template-columns: minmax(300px, 420px) minmax(560px, 600px);
     grid-template-areas:
-      "clues play"
-      "clues actions";
+      "clues play";
     align-items: start;
     justify-content: center;
     gap: 1.25rem;
@@ -1049,10 +1068,6 @@ body.dragging-tile .orbit-option {
   .orbit-play-area {
     grid-area: play;
     max-width: 600px;
-  }
-
-  .orbit-actions {
-    grid-area: actions;
   }
 
   .orbit-clues {
