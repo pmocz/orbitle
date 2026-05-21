@@ -135,6 +135,25 @@ body, html {
   margin-top: 0.25rem;
 }
 
+.orbit-info-stat {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  margin-top: 0.85rem;
+  padding: 0.55rem 0.65rem;
+  border: 1px solid rgba(107, 140, 184, 0.28);
+  border-radius: 5px;
+  background: rgba(12, 16, 28, 0.45);
+  color: #8fa3c4;
+  font-size: 0.72rem;
+}
+
+.orbit-info-stat strong {
+  color: #ffe89a;
+  font-size: 0.82rem;
+}
+
 .orbit-info-share {
   margin-top: 0.85rem;
   padding: 0.45rem 0.7rem;
@@ -959,7 +978,16 @@ body.dragging-tile .orbit-option {
   letter-spacing: 0.3em;
   text-transform: uppercase;
   color: #6b8cb8;
-  margin-bottom: 1.5rem;
+  margin-bottom: 0.65rem;
+}
+
+.orbit-reveal-system {
+  margin: 0 auto 0.45rem;
+}
+
+.orbit-reveal-system .orbit-system {
+  height: 74px;
+  margin-bottom: 0;
 }
 
 .orbit-reveal-title {
@@ -971,11 +999,34 @@ body.dragging-tile .orbit-option {
 }
 
 .orbit-reveal-copy {
-  margin-bottom: 1.5rem;
+  margin-bottom: 1rem;
   color: #c0c8d8;
   font-family: 'Cormorant Garamond', serif;
   font-size: 0.85rem;
   font-style: italic;
+}
+
+.orbit-countdown-wrap {
+  margin-bottom: 1.2rem;
+  padding: 0.75rem 0.9rem;
+  border: 1px solid rgba(107, 140, 184, 0.3);
+  border-radius: 5px;
+  background: rgba(12, 16, 28, 0.55);
+}
+
+.orbit-countdown-label {
+  margin-bottom: 0.35rem;
+  color: #7f8faa;
+  font-size: 0.58rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+
+.orbit-countdown {
+  color: #ffe89a;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 1rem;
+  letter-spacing: 0.08em;
 }
 
 @media (min-width: 980px) {

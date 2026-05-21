@@ -43,6 +43,58 @@ function permutations(arr) {
 const ALL_PERMS_4 = permutations([0, 1, 2, 3]);
 
 // ============================================================
+// DAILY SEEDING
+// ============================================================
+function utcPuzzleId(date = new Date()) {
+  return date.toISOString().slice(0, 10);
+}
+
+function nextUtcMidnight(date = new Date()) {
+  return Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate() + 1);
+}
+
+function timeUntilNextPuzzle() {
+  return Math.max(0, nextUtcMidnight() - Date.now());
+}
+
+function countdownText(ms = timeUntilNextPuzzle()) {
+  const totalSeconds = Math.ceil(ms / 1000);
+  const hours = Math.floor(totalSeconds / 3600);
+  const minutes = Math.floor((totalSeconds % 3600) / 60);
+  const seconds = totalSeconds % 60;
+  return `${hours}h ${String(minutes).padStart(2, "0")}m ${String(seconds).padStart(2, "0")}s`;
+}
+
+function seedFromString(str) {
+  let h = 2166136261;
+  for (let i = 0; i < str.length; i++) {
+    h ^= str.charCodeAt(i);
+    h = Math.imul(h, 16777619);
+  }
+  return h >>> 0;
+}
+
+function seededRandom(seed) {
+  let t = seed >>> 0;
+  return () => {
+    t += 0x6D2B79F5;
+    let r = Math.imul(t ^ (t >>> 15), 1 | t);
+    r ^= r + Math.imul(r ^ (r >>> 7), 61 | r);
+    return ((r ^ (r >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
+function withSeed(seed, fn) {
+  const nativeRandom = Math.random;
+  Math.random = seededRandom(seed);
+  try {
+    return fn();
+  } finally {
+    Math.random = nativeRandom;
+  }
+}
+
+// ============================================================
 // CLUE HELPERS
 // ============================================================
 function valAt(sol, cat, slot) { return sol[cat][slot]; }
@@ -426,10 +478,19 @@ function generatePuzzleWithRetry(maxAttempts = 8) {
   return null;
 }
 
+function generateDailyPuzzle(puzzleId = utcPuzzleId()) {
+  for (let i = 0; i < 8; i++) {
+    const puzzleForSeed = withSeed(seedFromString(`${puzzleId}:${i}`), () => generatePuzzleWithRetry(10));
+    if (puzzleForSeed) return puzzleForSeed;
+  }
+  return withSeed(seedFromString(`${puzzleId}:fallback`), () => generatePuzzleWithRetry(30));
+}
+
 // ============================================================
 // STATE
 // ============================================================
 let puzzle = null;
+let currentPuzzleId = utcPuzzleId();
 let loading = true;
 let board = emptyBoard();
 let strikes = emptyStrikes();
@@ -457,6 +518,8 @@ const ORBIT_SYSTEM_ORBITS = [
 }));
 const SHARE_URL = "https://orbitle.app";
 const SHARE_COPIED_MS = 1400;
+const SOLVED_STORAGE_PREFIX = "orbitle-solved-";
+const GAMES_PLAYED_KEY = "orbitle-games-played";
 
 // ============================================================
 // HELPERS
@@ -494,6 +557,44 @@ function startOrbitAnimationIfNeeded() {
   if (orbitAnimationStarted || !boardHasPlacedTiles()) return;
   orbitAnimationStarted = true;
   orbitAnimationEpoch = Date.now();
+}
+
+function solvedKey(puzzleId = currentPuzzleId) {
+  return `${SOLVED_STORAGE_PREFIX}${puzzleId}`;
+}
+
+function markPuzzleSolved() {
+  try {
+    const wasSolved = isPuzzleSolved();
+    localStorage.setItem(solvedKey(), "1");
+    if (!wasSolved) localStorage.setItem(GAMES_PLAYED_KEY, String(gamesPlayed() + 1));
+  } catch (_) {}
+}
+
+function isPuzzleSolved(puzzleId = currentPuzzleId) {
+  try {
+    return localStorage.getItem(solvedKey(puzzleId)) === "1";
+  } catch (_) {
+    return false;
+  }
+}
+
+function gamesPlayed() {
+  try {
+    return parseInt(localStorage.getItem(GAMES_PLAYED_KEY) || "0", 10) || 0;
+  } catch (_) {
+    return 0;
+  }
+}
+
+function loadDailyPuzzle() {
+  currentPuzzleId = utcPuzzleId();
+  puzzle = generateDailyPuzzle(currentPuzzleId);
+  status = isPuzzleSolved() ? "won" : "playing";
+  if (status === "won" && !orbitAnimationStarted) {
+    orbitAnimationStarted = true;
+    orbitAnimationEpoch = Date.now();
+  }
 }
 
 function effectiveStrikes(cat, slot) {
@@ -572,6 +673,11 @@ function generateWinFlavorText() {
 
 function setWon() {
   status = "won";
+  if (!orbitAnimationStarted) {
+    orbitAnimationStarted = true;
+    orbitAnimationEpoch = Date.now();
+  }
+  markPuzzleSolved();
 }
 
 // ============================================================
@@ -660,13 +766,6 @@ function handleClear() {
   render();
 }
 
-function handleNew() {
-  loading = true;
-  resetGameState();
-  render();
-  setTimeout(() => { puzzle = generatePuzzleWithRetry(); loading = false; render(); }, 50);
-}
-
 function handleShareLink() {
   if (shareCopiedTimer) clearTimeout(shareCopiedTimer);
   shareCopied = true;
@@ -686,8 +785,65 @@ function updateShareButtons() {
   });
 }
 
+function updateCountdowns() {
+  const nextText = countdownText();
+  document.querySelectorAll("[data-countdown]").forEach(el => {
+    el.textContent = nextText;
+  });
+}
+
+function checkDailyRollover() {
+  if (currentPuzzleId === utcPuzzleId()) return;
+  loading = true;
+  resetGameState();
+  loadDailyPuzzle();
+  loading = false;
+  render();
+}
+
+function tickDailyClock() {
+  checkDailyRollover();
+  updateCountdowns();
+}
+
 function shareButtonHTML(className) {
   return `<button class="${className}${shareCopied ? " copied" : ""}" data-action="share-link">${shareCopied ? "link copied!" : "Share Orbitle"}</button>`;
+}
+
+function helpPopupHTML() {
+  return `<div class="orbit-popup orbit-help-content">
+    Four planets orbit a star. Each orbit holds a unique planet <strong>color</strong>, <strong>type</strong>,
+    <strong>atmosphere</strong>, and <strong>moon count</strong>. Use the clues to deduce which attributes
+    belong to which orbit. Every puzzle has exactly one solution reachable by pure logic.
+    Drag or click tiles to an 'orbit', or 'rule out' a combination.
+    Tap a clue to cross it off once you've used it.
+  </div>`;
+}
+
+function infoPopupHTML() {
+  return `<div class="orbit-popup orbit-info-content">
+    <div class="orbit-info-title">Orbitle</div>
+    <div class="orbit-info-subtitle">A game of celestial deduction</div>
+    <div class="orbit-info-stat">
+      <span>Games played</span>
+      <strong>${gamesPlayed()}</strong>
+    </div>
+    ${shareButtonHTML("orbit-info-share")}
+    <div class="orbit-info-copy">Copyright 2026. All Rights Reserved.</div>
+  </div>`;
+}
+
+function updateTopPopups() {
+  const helpButton = document.querySelector("[data-action='toggle-help']");
+  const infoButton = document.querySelector("[data-action='toggle-info']");
+  helpButton?.classList.toggle("active", showHelp);
+  infoButton?.classList.toggle("active", showInfo);
+  if (helpButton) helpButton.setAttribute("aria-label", showHelp ? "Hide help" : "Show help");
+  if (infoButton) infoButton.setAttribute("aria-label", showInfo ? "Hide info" : "Show info");
+
+  const shell = document.querySelector("[data-popup-shell]");
+  if (!shell) return;
+  shell.innerHTML = showHelp ? helpPopupHTML() : showInfo ? infoPopupHTML() : "";
 }
 
 // ============================================================
@@ -807,11 +963,11 @@ function updateOrbitSystemFrame() {
 }
 
 function sortOrbitPlanetLayer(layer) {
-  const container = document.querySelector(`[data-orbit-layer-container="${layer}"]`);
-  if (!container) return;
-  [...container.children]
-    .sort((a, b) => parseFloat(a.dataset.depth || "0") - parseFloat(b.dataset.depth || "0"))
-    .forEach(el => container.appendChild(el));
+  document.querySelectorAll(`[data-orbit-layer-container="${layer}"]`).forEach(container => {
+    [...container.children]
+      .sort((a, b) => parseFloat(a.dataset.depth || "0") - parseFloat(b.dataset.depth || "0"))
+      .forEach(el => container.appendChild(el));
+  });
 }
 
 function animateOrbitSystem() {
@@ -856,13 +1012,13 @@ function orbitSystemPlanetHTML(slot, orbit, layer) {
   </g>`;
 }
 
-function orbitSystemHTML() {
+function orbitSystemHTML(showLabels = !orbitAnimationStarted) {
   const ringsHTML = ORBIT_SYSTEM_ORBITS
     .map((orbit, i) => `<ellipse class="orbit-system-ring ring-${i + 1}" cx="300" cy="50" rx="${orbit.rx}" ry="${orbit.ry}" />`)
     .join("");
-  const labelsHTML = orbitAnimationStarted ? "" : ORBIT_SYSTEM_ORBITS
+  const labelsHTML = showLabels ? ORBIT_SYSTEM_ORBITS
     .map((orbit, i) => `<text class="orbit-system-label" x="${ORBIT_CENTER.x + orbit.rx}" y="74">${i + 1}</text>`)
-    .join("");
+    .join("") : "";
   const planetsBehindHTML = ORBIT_SYSTEM_ORBITS
     .map((orbit, slot) => orbitSystemPlanetHTML(slot, orbit, "behind-star"))
     .join("");
@@ -897,30 +1053,12 @@ function render() {
   <div class="orbit-top-buttons right">
     <button class="orbit-top-button${showInfo ? " active" : ""}" data-action="toggle-info" aria-label="${showInfo ? "Hide info" : "Show info"}">i</button>
   </div>`;
+  h += `<div data-popup-shell>${showHelp ? helpPopupHTML() : showInfo ? infoPopupHTML() : ""}</div>`;
 
   // Header
   h += `<header class="orbit-header">
     <h1 class="orbit-title">Orbitle</h1>
   </header>`;
-
-  if (showHelp) {
-    h += `<div class="orbit-popup orbit-help-content">
-      Four planets orbit a star. Each orbit holds a unique planet <strong>color</strong>, <strong>type</strong>,
-      <strong>atmosphere</strong>, and <strong>moon count</strong>. Use the clues to deduce which attributes
-      belong to which orbit. Every puzzle has exactly one solution reachable by pure logic.
-      Drag or click tiles to an 'orbit', or 'rule out' a combination.
-      Tap a clue to cross it off once you've used it.
-    </div>`;
-  }
-
-  if (showInfo) {
-    h += `<div class="orbit-popup orbit-info-content">
-      <div class="orbit-info-title">Orbitle</div>
-      <div class="orbit-info-subtitle">A game of celestial deduction</div>
-      ${shareButtonHTML("orbit-info-share")}
-      <div class="orbit-info-copy">Copyright 2026. All Rights Reserved.</div>
-    </div>`;
-  }
 
   if (loading) {
     h += `<div class="orbit-loading">Charting the system...</div>`;
@@ -986,7 +1124,6 @@ function render() {
     // Actions
     h += `<div class="orbit-actions">
       <button class="orbit-btn secondary" data-action="clear">Clear</button>
-      <button class="orbit-btn gold" data-action="new-puzzle">New Puzzle</button>
     </div>`;
 
     h += `</div>`; // end game layout
@@ -994,15 +1131,19 @@ function render() {
 
   // Won overlay
   if (status === "won") {
-    h += `<div class="orbit-reveal" data-action="dismiss-won">
+    h += `<div class="orbit-reveal">
       <div class="orbit-reveal-card">
         <div class="orbit-reveal-sub">System charted</div>
+        <div class="orbit-reveal-system">${orbitSystemHTML(false)}</div>
         <div class="orbit-reveal-title">Solved</div>
         <div class="orbit-reveal-copy">
           ${escHTML(generateWinFlavorText())}
         </div>
+        <div class="orbit-countdown-wrap">
+          <div class="orbit-countdown-label">Next puzzle in</div>
+          <div class="orbit-countdown" data-countdown>${countdownText()}</div>
+        </div>
         ${shareButtonHTML("orbit-btn share full")}
-        <button class="orbit-btn gold full" data-action="new-puzzle">Chart Another</button>
       </div>
     </div>`;
   }
@@ -1030,10 +1171,6 @@ document.addEventListener("click", e => {
     return;
   }
 
-  if (status === "won") {
-    if (!e.target.closest(".orbit-reveal-card")) { status = "done"; render(); return; }
-  }
-
   const strikeEl = e.target.closest("[data-strike-column='true']");
   if (strikeEl) {
     e.preventDefault();
@@ -1048,8 +1185,17 @@ document.addEventListener("click", e => {
   const action = el.dataset.action;
 
   switch (action) {
-    case "toggle-help":  showHelp = !showHelp; if (showHelp) showInfo = false; render(); break;
-    case "toggle-info":  showInfo = !showInfo; if (showInfo) showHelp = false; if (!showInfo) shareCopied = false; render(); break;
+    case "toggle-help":
+      showHelp = !showHelp;
+      if (showHelp) showInfo = false;
+      updateTopPopups();
+      break;
+    case "toggle-info":
+      showInfo = !showInfo;
+      if (showInfo) showHelp = false;
+      if (!showInfo) shareCopied = false;
+      updateTopPopups();
+      break;
     case "share-link":   handleShareLink(); break;
     case "toggle-clue": {
       const idx = parseInt(el.dataset.idx);
@@ -1064,10 +1210,6 @@ document.addEventListener("click", e => {
     case "pick-value": handleValuePick(el.dataset.cat, parseInt(el.dataset.val)); break;
     case "remove-value": handleRemoveValue(el.dataset.cat, parseInt(el.dataset.slot)); break;
     case "clear":      handleClear(); break;
-    case "new-puzzle": handleNew(); break;
-    case "dismiss-won":
-      if (!e.target.closest(".orbit-reveal-card")) { status = "done"; render(); }
-      break;
   }
 });
 
@@ -1270,4 +1412,5 @@ function initStarfield() {
 initStarfield();
 render();
 animateOrbitSystem();
-setTimeout(() => { puzzle = generatePuzzleWithRetry(); loading = false; render(); }, 50);
+setInterval(tickDailyClock, 1000);
+setTimeout(() => { loadDailyPuzzle(); loading = false; render(); }, 50);
