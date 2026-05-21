@@ -102,11 +102,23 @@ body, html {
   background: rgba(42, 34, 24, 0.88);
 }
 
+.orbit-popup-shell {
+  position: fixed;
+  inset: 0;
+  z-index: 30;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.25rem;
+  background: rgba(6, 8, 15, 0.82);
+  backdrop-filter: blur(10px);
+}
+
 .orbit-popup {
-  position: absolute;
-  top: 3.65rem;
-  z-index: 19;
+  position: relative;
   width: min(360px, calc(100vw - 2rem));
+  max-height: calc(100vh - 2.5rem);
+  overflow: auto;
   padding: 0.9rem 1rem;
   border: 1px solid #1a2238;
   border-radius: 6px;
@@ -118,8 +130,27 @@ body, html {
   color: #c0c8d8;
 }
 
-.orbit-help-content { left: 1rem; }
-.orbit-info-content { right: 1rem; }
+.orbit-popup-close {
+  position: absolute;
+  top: 0.45rem;
+  right: 0.5rem;
+  width: 24px;
+  height: 22px;
+  border: 1px solid rgba(107, 140, 184, 0.42);
+  border-radius: 5px;
+  background: rgba(12, 16, 28, 0.72);
+  color: #9cb8df;
+  cursor: pointer;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.95rem;
+  line-height: 1;
+}
+
+.orbit-popup-close:hover {
+  border-color: rgba(212, 166, 74, 0.68);
+  color: #ffe89a;
+  background: rgba(42, 34, 24, 0.82);
+}
 
 .orbit-help-content strong { color: #d4a64a; }
 
@@ -1435,7 +1466,7 @@ body.dragging-tile .orbit-option {
   inset: 0;
   background: rgba(6, 8, 15, 0.92);
   backdrop-filter: blur(12px);
-  z-index: 10;
+  z-index: 30;
   display: flex;
   align-items: center;
   justify-content: center;

@@ -949,6 +949,7 @@ function updateResultCopyButton() {
 
 function helpPopupHTML() {
   return `<div class="orbit-popup orbit-help-content">
+    <button class="orbit-popup-close" data-action="close-popup" aria-label="Close popup">×</button>
     <div class="orbit-help-title">How to Play</div>
     <div class="orbit-help-copy">
       Use the observations to deduce each planet's <strong>color</strong>, <strong>type</strong>,
@@ -1005,6 +1006,7 @@ function helpPopupHTML() {
 
 function infoPopupHTML() {
   return `<div class="orbit-popup orbit-info-content">
+    <button class="orbit-popup-close" data-action="close-popup" aria-label="Close popup">×</button>
     <div class="orbit-info-title">Orbitle</div>
     <div class="orbit-info-subtitle">A game of celestial deduction</div>
     <div class="orbit-info-stat">
@@ -1014,6 +1016,11 @@ function infoPopupHTML() {
     ${shareButtonHTML("orbit-info-share")}
     <div class="orbit-info-copy">Copyright 2026. All Rights Reserved.</div>
   </div>`;
+}
+
+function popupShellHTML() {
+  if (!showHelp && !showInfo) return "";
+  return `<div class="orbit-popup-shell">${showHelp ? helpPopupHTML() : infoPopupHTML()}</div>`;
 }
 
 function updateTopPopups() {
@@ -1026,7 +1033,7 @@ function updateTopPopups() {
 
   const shell = document.querySelector("[data-popup-shell]");
   if (!shell) return;
-  shell.innerHTML = showHelp ? helpPopupHTML() : showInfo ? infoPopupHTML() : "";
+  shell.innerHTML = popupShellHTML();
 }
 
 // ============================================================
@@ -1236,7 +1243,7 @@ function render() {
   <div class="orbit-top-buttons right">
     <button class="orbit-top-button${showInfo ? " active" : ""}" data-action="toggle-info" aria-label="${showInfo ? "Hide info" : "Show info"}">i</button>
   </div>`;
-  h += `<div data-popup-shell>${showHelp ? helpPopupHTML() : showInfo ? infoPopupHTML() : ""}</div>`;
+  h += `<div data-popup-shell>${popupShellHTML()}</div>`;
 
   // Header
   h += `<header class="orbit-header">
@@ -1391,6 +1398,13 @@ document.addEventListener("click", e => {
     case "start-help":
       markTutorialSeen();
       showHelp = false;
+      updateTopPopups();
+      break;
+    case "close-popup":
+      if (showHelp) markTutorialSeen();
+      showHelp = false;
+      showInfo = false;
+      shareCopied = false;
       updateTopPopups();
       break;
     case "share-link":   handleShareLink(); break;
