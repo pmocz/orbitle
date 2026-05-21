@@ -102,7 +102,7 @@ body, html {
   background: rgba(42, 34, 24, 0.88);
 }
 
-.orbit-popup-shell {
+.orbit-modal {
   position: fixed;
   inset: 0;
   z-index: 30;
@@ -114,11 +114,14 @@ body, html {
   backdrop-filter: blur(10px);
 }
 
-.orbit-popup {
+.orbit-modal-card {
   position: relative;
-  width: min(360px, calc(100vw - 2rem));
   max-height: calc(100vh - 2.5rem);
   overflow: auto;
+}
+
+.orbit-popup {
+  width: min(360px, calc(100vw - 2rem));
   padding: 0.9rem 1rem;
   border: 1px solid #1a2238;
   border-radius: 6px;
@@ -156,6 +159,22 @@ body, html {
 
 .orbit-help-content .orbit-help-ruleout-text {
   color: #c9a0a2;
+}
+
+.orbit-help-brand {
+  font-family: 'Orbitron', 'JetBrains Mono', monospace;
+  font-size: 1.35rem;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  line-height: 1;
+  text-transform: uppercase;
+  text-align: center;
+  background: linear-gradient(180deg, #e0e6f0 0%, #6b8cb8 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  text-shadow: 0 0 18px rgba(107, 140, 184, 0.28);
+  margin-bottom: 0.45rem;
 }
 
 .orbit-help-title {
@@ -1462,14 +1481,8 @@ body.dragging-tile .orbit-option {
 
 /* ── Win overlay ── */
 .orbit-reveal {
-  position: fixed;
-  inset: 0;
   background: rgba(6, 8, 15, 0.92);
   backdrop-filter: blur(12px);
-  z-index: 30;
-  display: flex;
-  align-items: center;
-  justify-content: center;
   padding: 2rem;
   animation: fadeIn 0.6s ease-out;
 }

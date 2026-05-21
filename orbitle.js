@@ -1061,9 +1061,21 @@ function updateResultCopyButton() {
   });
 }
 
+function modalShellHTML(content, { shellClass = "", cardClass = "", closeAction = null } = {}) {
+  const closeButton = closeAction
+    ? `<button class="orbit-popup-close" data-action="${closeAction}" aria-label="Close popup">×</button>`
+    : "";
+  return `<div class="orbit-modal ${shellClass}">
+    <div class="orbit-modal-card ${cardClass}">
+      ${closeButton}
+      ${content}
+    </div>
+  </div>`;
+}
+
 function helpPopupHTML() {
-  return `<div class="orbit-popup orbit-help-content">
-    <button class="orbit-popup-close" data-action="close-popup" aria-label="Close popup">×</button>
+  return modalShellHTML(`
+    <div class="orbit-help-brand">Orbitle</div>
     <div class="orbit-help-title">How to Play</div>
     <div class="orbit-help-copy">
       Use the observations to deduce each planet's <strong>color</strong>, <strong>type</strong>,
@@ -1115,12 +1127,11 @@ function helpPopupHTML() {
       Tap an observation to cross it off after you use it.
     </div>
     <button class="orbit-help-start" data-action="start-help">Play</button>
-  </div>`;
+  `, { cardClass: "orbit-popup orbit-help-content", closeAction: "close-popup" });
 }
 
 function infoPopupHTML() {
-  return `<div class="orbit-popup orbit-info-content">
-    <button class="orbit-popup-close" data-action="close-popup" aria-label="Close popup">×</button>
+  return modalShellHTML(`
     <div class="orbit-info-title">Orbitle</div>
     <div class="orbit-info-subtitle">A game of celestial deduction</div>
     <div class="orbit-info-stat">
@@ -1133,12 +1144,32 @@ function infoPopupHTML() {
     </div>
     ${shareButtonHTML("orbit-info-share")}
     <div class="orbit-info-copy">Copyright 2026. All Rights Reserved.</div>
-  </div>`;
+  `, { cardClass: "orbit-popup orbit-info-content", closeAction: "close-popup" });
+}
+
+function wonPopupHTML() {
+  return modalShellHTML(`
+    <div class="orbit-reveal-sub">Orbitle #${puzzleNumber()}</div>
+    <div class="orbit-reveal-system">${orbitSystemHTML(false)}</div>
+    <div class="orbit-reveal-title">Solved</div>
+    <div class="orbit-reveal-copy">
+      ${escHTML(generateWinFlavorText())}
+    </div>
+    <div class="orbit-countdown-wrap">
+      <div class="orbit-countdown-label">Next puzzle in</div>
+      <div class="orbit-countdown" data-countdown>${countdownText()}</div>
+    </div>
+    ${resultShareButtonHTML("orbit-btn share full")}
+    <div class="orbit-share-box">
+      <button class="orbit-share-copy${resultCopied ? " copied" : ""}" data-action="copy-result" aria-label="${resultCopied ? "Copied" : "Copy result"}">⧉</button>
+      <textarea class="orbit-share-preview" readonly rows="7">${escHTML(shareResultText())}</textarea>
+    </div>
+  `, { shellClass: "orbit-reveal", cardClass: "orbit-reveal-card" });
 }
 
 function popupShellHTML() {
   if (!showHelp && !showInfo) return "";
-  return `<div class="orbit-popup-shell">${showHelp ? helpPopupHTML() : infoPopupHTML()}</div>`;
+  return showHelp ? helpPopupHTML() : infoPopupHTML();
 }
 
 function updateTopPopups() {
@@ -1440,25 +1471,7 @@ function render() {
 
   // Won overlay
   if (status === "won") {
-    h += `<div class="orbit-reveal">
-      <div class="orbit-reveal-card">
-        <div class="orbit-reveal-sub">Orbitle #${puzzleNumber()}</div>
-        <div class="orbit-reveal-system">${orbitSystemHTML(false)}</div>
-        <div class="orbit-reveal-title">Solved</div>
-        <div class="orbit-reveal-copy">
-          ${escHTML(generateWinFlavorText())}
-        </div>
-        <div class="orbit-countdown-wrap">
-          <div class="orbit-countdown-label">Next puzzle in</div>
-          <div class="orbit-countdown" data-countdown>${countdownText()}</div>
-        </div>
-        ${resultShareButtonHTML("orbit-btn share full")}
-        <div class="orbit-share-box">
-          <button class="orbit-share-copy${resultCopied ? " copied" : ""}" data-action="copy-result" aria-label="${resultCopied ? "Copied" : "Copy result"}">⧉</button>
-          <textarea class="orbit-share-preview" readonly rows="7">${escHTML(shareResultText())}</textarea>
-        </div>
-      </div>
-    </div>`;
+    h += wonPopupHTML();
   }
 
   h += `</div>`; // end orbit-root
