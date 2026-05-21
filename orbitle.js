@@ -367,7 +367,7 @@ function clueBetween(sol) {
       const inner = sY < sZ ? { cat: cY, val: vY } : { cat: cZ, val: vZ };
       const outer = sY < sZ ? { cat: cZ, val: vZ } : { cat: cY, val: vY };
       return {
-        text: `The ${labelFor(cX, vX)} orbits directly between the ${labelFor(inner.cat, inner.val)} (inward) and the ${labelFor(outer.cat, outer.val)} (outward).`,
+        text: `The ${labelFor(cX, vX)} is flanked by the ${labelFor(inner.cat, inner.val)} inward and the ${labelFor(outer.cat, outer.val)} outward.`,
         test: (s) => {
           const a = slotOf(s,cX,vX), b = slotOf(s,cY,vY), c = slotOf(s,cZ,vZ);
           return a > Math.min(b,c) && a < Math.max(b,c) && Math.abs(a - b) === 1 && Math.abs(a - c) === 1;
