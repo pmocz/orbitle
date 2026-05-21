@@ -1253,7 +1253,12 @@ function render() {
 
     // Board
     h += `<div class="orbit-board">`;
-    h += `<button class="orbit-clear-icon" data-action="clear" aria-label="Clear board">↻</button>`;
+    h += `<button class="orbit-clear-icon" data-action="clear" aria-label="Clear board">
+      <svg class="orbit-clear-symbol" viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M4.5 9a8 8 0 1 1 1.2 8.3" />
+        <path d="M4.5 4.5V9h4.5" />
+      </svg>
+    </button>`;
     h += orbitSystemHTML();
     h += `<div class="orbit-columns">`;
     for (let slot = 0; slot < 4; slot++) {
