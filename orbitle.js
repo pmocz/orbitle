@@ -1106,14 +1106,14 @@ function helpPopupHTML() {
           <div class="orbit-tile-tray">
             <div class="orbit-tile-row color">
               <div class="orbit-options">
-                <div class="orbit-option orbit-help-pick">${optionHTML("color", 0)}</div>
-                <div class="orbit-option orbit-help-pick">${optionHTML("color", 1)}</div>
+                <div class="orbit-option">${optionHTML("color", 0)}</div>
+                <div class="orbit-option">${optionHTML("color", 1)}</div>
               </div>
             </div>
             <div class="orbit-tile-row moons">
               <div class="orbit-options">
-                <div class="orbit-option orbit-help-pick">${optionHTML("moons", 0)}</div>
-                <div class="orbit-option orbit-help-pick">${optionHTML("moons", 1)}</div>
+                <div class="orbit-option">${optionHTML("moons", 0)}</div>
+                <div class="orbit-option">${optionHTML("moons", 1)}</div>
               </div>
             </div>
           </div>

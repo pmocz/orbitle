@@ -315,29 +315,6 @@ body.orbit-modal-open {
   cursor: default;
 }
 
-.orbit-help-picker-grid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  justify-self: center;
-  width: min(100%, 190px);
-  gap: 0;
-  border: 1px solid rgba(107, 140, 184, 0.34);
-  border-radius: 6px;
-  overflow: hidden;
-  background: rgba(12, 16, 28, 0.55);
-}
-
-.orbit-help-pick {
-  min-height: 30px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border: 1px solid rgba(42, 53, 80, 0.75);
-  color: #d8e2f2;
-  font-size: 0.52rem;
-  background: rgba(20, 26, 44, 0.78);
-}
-
 .orbit-help-board {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -375,47 +352,6 @@ body.orbit-modal-open {
   animation: orbitHelpDragMoon 5.6s ease-in-out infinite;
 }
 
-.orbit-help-mini-orbit {
-  border: 1px solid rgba(112, 164, 230, 0.42);
-  border-radius: 6px;
-  overflow: hidden;
-  background: rgba(34, 61, 102, 0.72);
-}
-
-.orbit-help-mini-title {
-  padding: 0.32rem;
-  color: #9cb8df;
-  font-size: 0.55rem;
-  text-align: center;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-}
-
-.orbit-help-mini-cell {
-  min-height: 26px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-top: 1px solid rgba(92, 122, 170, 0.45);
-  color: #dce6f4;
-  font-size: 0.62rem;
-  background: rgba(32, 44, 72, 0.82);
-}
-
-.orbit-help-mini-cell.empty {
-  color: #4c5b78;
-}
-
-.orbit-help-mini-cell.color-row {
-  border-top-color: rgba(230, 235, 245, 0.36);
-  background: rgba(230, 235, 245, 0.13);
-}
-
-.orbit-help-mini-cell.moon-row {
-  border-top-color: rgba(128, 92, 184, 0.42);
-  background: rgba(128, 92, 184, 0.17);
-}
-
 .orbit-help-fill-amber,
 .orbit-help-fill-moon {
   animation-duration: 5.6s;
@@ -445,20 +381,6 @@ body.orbit-modal-open {
 
 .orbit-help-fill-moon .orbit-tile-content {
   animation-name: orbitHelpContentMoon;
-}
-
-.orbit-help-mini-rule {
-  padding: 0.35rem;
-  border-top: 1px solid rgba(126, 82, 88, 0.65);
-  background: rgba(58, 36, 42, 0.86);
-  color: #f4dcdc;
-  text-align: center;
-  font-size: 0.52rem;
-  letter-spacing: 0.08em;
-}
-
-.orbit-help-mini-rule.muted {
-  color: #a9878a;
 }
 
 @keyframes orbitHelpDragAmber {
