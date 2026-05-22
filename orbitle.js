@@ -575,75 +575,110 @@ function startOrbitAnimationIfNeeded() {
   orbitAnimationEpoch = Date.now();
 }
 
-function solvedKey(puzzleId = currentPuzzleId) {
-  return `${SOLVED_STORAGE_PREFIX}${puzzleId}`;
-}
+// ============================================================
+// PERSISTENCE
+// ============================================================
+const Persistence = {
+  dailyKey(prefix, puzzleId = currentPuzzleId) {
+    return `${prefix}${puzzleId}`;
+  },
 
-function resultKey(puzzleId = currentPuzzleId) {
-  return `${RESULT_STORAGE_PREFIX}${puzzleId}`;
-}
+  get(key, fallback = "") {
+    try {
+      return localStorage.getItem(key) ?? fallback;
+    } catch (_) {
+      return fallback;
+    }
+  },
 
-function attemptKey(puzzleId = currentPuzzleId) {
-  return `${ATTEMPT_STORAGE_PREFIX}${puzzleId}`;
-}
+  set(key, value) {
+    try {
+      localStorage.setItem(key, value);
+    } catch (_) {}
+  },
 
-function markPuzzleSolved() {
-  try {
-    const wasSolved = isPuzzleSolved();
-    localStorage.setItem(solvedKey(), "1");
-    localStorage.removeItem(attemptKey());
-    if (!wasSolved) localStorage.setItem(GAMES_PLAYED_KEY, String(gamesPlayed() + 1));
-  } catch (_) {}
-}
+  remove(key) {
+    try {
+      localStorage.removeItem(key);
+    } catch (_) {}
+  },
 
-function isPuzzleSolved(puzzleId = currentPuzzleId) {
-  try {
-    return localStorage.getItem(solvedKey(puzzleId)) === "1";
-  } catch (_) {
-    return false;
-  }
-}
+  solvedKey(puzzleId = currentPuzzleId) {
+    return this.dailyKey(SOLVED_STORAGE_PREFIX, puzzleId);
+  },
 
-function gamesPlayed() {
-  try {
-    return parseInt(localStorage.getItem(GAMES_PLAYED_KEY) || "0", 10) || 0;
-  } catch (_) {
-    return 0;
-  }
-}
+  resultKey(puzzleId = currentPuzzleId) {
+    return this.dailyKey(RESULT_STORAGE_PREFIX, puzzleId);
+  },
 
-function hasSeenTutorial() {
-  try {
-    return localStorage.getItem(TUTORIAL_SEEN_KEY) === "1";
-  } catch (_) {
-    return true;
-  }
-}
+  attemptKey(puzzleId = currentPuzzleId) {
+    return this.dailyKey(ATTEMPT_STORAGE_PREFIX, puzzleId);
+  },
 
-function markTutorialSeen() {
-  try {
-    localStorage.setItem(TUTORIAL_SEEN_KEY, "1");
-  } catch (_) {}
-}
+  markPuzzleSolved() {
+    const wasSolved = this.isPuzzleSolved();
+    this.set(this.solvedKey(), "1");
+    this.remove(this.attemptKey());
+    if (!wasSolved) this.set(GAMES_PLAYED_KEY, String(this.gamesPlayed() + 1));
+  },
+
+  isPuzzleSolved(puzzleId = currentPuzzleId) {
+    return this.get(this.solvedKey(puzzleId)) === "1";
+  },
+
+  gamesPlayed() {
+    return parseInt(this.get(GAMES_PLAYED_KEY, "0"), 10) || 0;
+  },
+
+  hasSeenTutorial() {
+    try {
+      return localStorage.getItem(TUTORIAL_SEEN_KEY) === "1";
+    } catch (_) {
+      return true;
+    }
+  },
+
+  markTutorialSeen() {
+    this.set(TUTORIAL_SEEN_KEY, "1");
+  },
+
+  saveShareResult(text) {
+    this.set(this.resultKey(), text);
+  },
+
+  storedShareResult() {
+    return this.get(this.resultKey(), "");
+  },
+
+  saveAttempt() {
+    if (status !== "playing") return;
+    this.set(this.attemptKey(), JSON.stringify(attemptPayload()));
+  },
+
+  clearAttempt(puzzleId = currentPuzzleId) {
+    this.remove(this.attemptKey(puzzleId));
+  },
+
+  loadSavedAttempt() {
+    try {
+      const raw = this.get(this.attemptKey(), "");
+      if (!raw) return;
+      const saved = JSON.parse(raw);
+      board = restoreBoard(saved.board);
+      strikes = restoreStrikes(saved.strikes);
+      crossedClues = restoreCrossedClues(saved.crossedClues);
+      restorePlacementOrder(saved.placementOrder);
+      startOrbitAnimationIfNeeded();
+    } catch (_) {
+      this.clearAttempt();
+    }
+  },
+};
 
 function puzzleNumber(puzzleId = currentPuzzleId) {
   const [year, month, day] = puzzleId.split("-").map(Number);
   const date = Date.UTC(year, month - 1, day);
   return Math.max(1, Math.floor((date - PUZZLE_NUMBER_EPOCH) / 86400000) + 1);
-}
-
-function saveShareResult(text) {
-  try {
-    localStorage.setItem(resultKey(), text);
-  } catch (_) {}
-}
-
-function storedShareResult() {
-  try {
-    return localStorage.getItem(resultKey()) || "";
-  } catch (_) {
-    return "";
-  }
 }
 
 function validValIdx(v) {
@@ -717,42 +752,14 @@ function attemptPayload() {
   };
 }
 
-function saveAttempt() {
-  if (status !== "playing") return;
-  try {
-    localStorage.setItem(attemptKey(), JSON.stringify(attemptPayload()));
-  } catch (_) {}
-}
-
-function clearAttempt(puzzleId = currentPuzzleId) {
-  try {
-    localStorage.removeItem(attemptKey(puzzleId));
-  } catch (_) {}
-}
-
-function loadSavedAttempt() {
-  try {
-    const raw = localStorage.getItem(attemptKey());
-    if (!raw) return;
-    const saved = JSON.parse(raw);
-    board = restoreBoard(saved.board);
-    strikes = restoreStrikes(saved.strikes);
-    crossedClues = restoreCrossedClues(saved.crossedClues);
-    restorePlacementOrder(saved.placementOrder);
-    startOrbitAnimationIfNeeded();
-  } catch (_) {
-    clearAttempt();
-  }
-}
-
 function loadDailyPuzzle() {
   currentPuzzleId = utcPuzzleId();
   puzzle = generateDailyPuzzle(currentPuzzleId);
-  status = isPuzzleSolved() ? "won" : "playing";
+  status = Persistence.isPuzzleSolved() ? "won" : "playing";
   if (status === "won") {
     board = solvedBoard();
   } else {
-    loadSavedAttempt();
+    Persistence.loadSavedAttempt();
   }
   if (status === "won" && !orbitAnimationStarted) {
     orbitAnimationStarted = true;
@@ -823,7 +830,7 @@ function buildShareResultText() {
 }
 
 function shareResultText() {
-  return storedShareResult() || buildShareResultText();
+  return Persistence.storedShareResult() || buildShareResultText();
 }
 
 function randomItem(items, rng = Math.random) {
@@ -890,8 +897,8 @@ function setWon() {
     orbitAnimationStarted = true;
     orbitAnimationEpoch = Date.now();
   }
-  saveShareResult(buildShareResultText());
-  markPuzzleSolved();
+  Persistence.saveShareResult(buildShareResultText());
+  Persistence.markPuzzleSolved();
 }
 
 // ============================================================
@@ -934,7 +941,7 @@ function placeValue(cat, slot, valIdx) {
   ns.delete(valIdx);
   strikes = { ...strikes, [cat]: strikes[cat].map((s, i) => i === slot ? ns : s) };
   checkWin(board);
-  saveAttempt();
+  Persistence.saveAttempt();
 }
 
 function addStrike(cat, slot, valIdx) {
@@ -942,7 +949,7 @@ function addStrike(cat, slot, valIdx) {
   const ns = new Set(strikes[cat][slot]);
   ns.add(valIdx);
   strikes = { ...strikes, [cat]: strikes[cat].map((s, i) => i === slot ? ns : s) };
-  saveAttempt();
+  Persistence.saveAttempt();
 }
 
 function handleValuePick(cat, valIdx) {
@@ -978,13 +985,13 @@ function handleRemoveValue(cat, slot) {
   if (board[cat][slot] !== null) removePlacement(cat, board[cat][slot]);
   board = { ...board, [cat]: board[cat].map((v, i) => i === slot ? null : v) };
   selected = selection(slot);
-  saveAttempt();
+  Persistence.saveAttempt();
   render();
 }
 
 function handleClear() {
   resetGameState();
-  clearAttempt();
+  Persistence.clearAttempt();
   render();
 }
 
@@ -1140,7 +1147,7 @@ function infoPopupHTML() {
     </div>
     <div class="orbit-info-stat">
       <span>Games played</span>
-      <strong>${gamesPlayed()}</strong>
+      <strong>${Persistence.gamesPlayed()}</strong>
     </div>
     ${shareButtonHTML("orbit-info-share")}
     <div class="orbit-info-copy">Copyright 2026. All Rights Reserved.</div>
@@ -1517,7 +1524,7 @@ document.addEventListener("click", e => {
 
   switch (action) {
     case "toggle-help":
-      if (showHelp) markTutorialSeen();
+      if (showHelp) Persistence.markTutorialSeen();
       showHelp = !showHelp;
       if (showHelp) {
         showInfo = false;
@@ -1525,19 +1532,19 @@ document.addEventListener("click", e => {
       updateTopPopups();
       break;
     case "toggle-info":
-      if (showHelp) markTutorialSeen();
+      if (showHelp) Persistence.markTutorialSeen();
       showInfo = !showInfo;
       if (showInfo) showHelp = false;
       if (!showInfo) shareCopied = false;
       updateTopPopups();
       break;
     case "start-help":
-      markTutorialSeen();
+      Persistence.markTutorialSeen();
       showHelp = false;
       updateTopPopups();
       break;
     case "close-popup":
-      if (showHelp) markTutorialSeen();
+      if (showHelp) Persistence.markTutorialSeen();
       showHelp = false;
       showInfo = false;
       shareCopied = false;
@@ -1551,7 +1558,7 @@ document.addEventListener("click", e => {
       const n = new Set(crossedClues);
       n.has(idx) ? n.delete(idx) : n.add(idx);
       crossedClues = n;
-      saveAttempt();
+      Persistence.saveAttempt();
       render();
       break;
     }
@@ -1565,7 +1572,7 @@ document.addEventListener("click", e => {
 
 document.addEventListener("keydown", e => {
   if (e.key !== "Escape" || (!showHelp && !showInfo)) return;
-  if (showHelp) markTutorialSeen();
+  if (showHelp) Persistence.markTutorialSeen();
   showHelp = false;
   showInfo = false;
   shareCopied = false;
@@ -1769,7 +1776,7 @@ function initStarfield() {
 // INIT
 // ============================================================
 initStarfield();
-showHelp = !hasSeenTutorial();
+showHelp = !Persistence.hasSeenTutorial();
 render();
 animateOrbitSystem();
 setInterval(tickDailyClock, 1000);
