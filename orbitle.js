@@ -1325,6 +1325,37 @@ function animateOrbitSystem() {
   requestAnimationFrame(animateOrbitSystem);
 }
 
+function planetTextureHTML(planetClass, r) {
+  if (planetClass === "rocky") {
+    return `<g class="orbit-system-texture">
+      <circle class="orbit-system-texture spot" cx="${(-r * 0.42).toFixed(1)}" cy="${(-r * 0.22).toFixed(1)}" r="${(r * 0.28).toFixed(1)}" />
+      <circle class="orbit-system-texture spot" cx="${(r * 0.36).toFixed(1)}" cy="${(r * 0.28).toFixed(1)}" r="${(r * 0.24).toFixed(1)}" />
+      <circle class="orbit-system-texture spot" cx="${(r * 0.16).toFixed(1)}" cy="${(-r * 0.44).toFixed(1)}" r="${(r * 0.14).toFixed(1)}" />
+      <path d="M${(-r * 0.72).toFixed(1)} ${(r * 0.38).toFixed(1)} L${(-r * 0.25).toFixed(1)} ${(r * 0.02).toFixed(1)} L${(r * 0.18).toFixed(1)} ${(r * 0.26).toFixed(1)} L${(r * 0.68).toFixed(1)} ${(r * 0.02).toFixed(1)}" />
+    </g>`;
+  }
+  if (planetClass === "ocean") {
+    return `<g class="orbit-system-texture">
+      <path d="M${(-r * 0.78).toFixed(1)} ${(-r * 0.24).toFixed(1)} C${(-r * 0.38).toFixed(1)} ${(-r * 0.46).toFixed(1)} ${(r * 0.02).toFixed(1)} ${(-r * 0.02).toFixed(1)} ${(r * 0.62).toFixed(1)} ${(-r * 0.24).toFixed(1)}" />
+      <path d="M${(-r * 0.72).toFixed(1)} ${(r * 0.18).toFixed(1)} C${(-r * 0.28).toFixed(1)} ${(-r * 0.04).toFixed(1)} ${(r * 0.18).toFixed(1)} ${(r * 0.42).toFixed(1)} ${(r * 0.72).toFixed(1)} ${(r * 0.16).toFixed(1)}" />
+    </g>`;
+  }
+  if (planetClass === "ice") {
+    return `<g class="orbit-system-texture">
+      <path d="M${(-r * 0.55).toFixed(1)} ${(-r * 0.62).toFixed(1)} L${(-r * 0.08).toFixed(1)} ${(-r * 0.08).toFixed(1)} L${(r * 0.52).toFixed(1)} ${(r * 0.58).toFixed(1)}" />
+      <path d="M${(-r * 0.08).toFixed(1)} ${(-r * 0.08).toFixed(1)} L${(-r * 0.42).toFixed(1)} ${(r * 0.38).toFixed(1)}" />
+      <path d="M${(r * 0.08).toFixed(1)} ${(r * 0.08).toFixed(1)} L${(r * 0.42).toFixed(1)} ${(-r * 0.35).toFixed(1)}" />
+    </g>`;
+  }
+  if (planetClass === "lava") {
+    return `<g class="orbit-system-texture">
+      <path d="M${(-r * 0.18).toFixed(1)} ${(-r * 0.72).toFixed(1)} L${(-r * 0.02).toFixed(1)} ${(-r * 0.18).toFixed(1)} L${(-r * 0.26).toFixed(1)} ${(r * 0.18).toFixed(1)} L${(-r * 0.04).toFixed(1)} ${(r * 0.72).toFixed(1)}" />
+      <path d="M${(r * 0.35).toFixed(1)} ${(-r * 0.45).toFixed(1)} L${(r * 0.12).toFixed(1)} ${(r * 0.02).toFixed(1)} L${(r * 0.48).toFixed(1)} ${(r * 0.5).toFixed(1)}" />
+    </g>`;
+  }
+  return "";
+}
+
 function orbitSystemPlanetHTML(slot, orbit, layer) {
   const colorIdx = board.color[slot];
   const planetIdx = board.planet[slot];
@@ -1357,7 +1388,7 @@ function orbitSystemPlanetHTML(slot, orbit, layer) {
     <circle class="orbit-system-glow" cx="0" cy="0" r="${orbit.r + 5.8}" />
     ${moonsBehindHTML}
     <circle class="orbit-system-planet" cx="0" cy="0" r="${orbit.r}" fill="${fill}" />
-    <path class="orbit-system-band" d="M${(-orbit.r * 0.9).toFixed(1)} 0 C${(-orbit.r * 0.35).toFixed(1)} ${(-orbit.r * 0.42).toFixed(1)} ${(orbit.r * 0.35).toFixed(1)} ${(-orbit.r * 0.42).toFixed(1)} ${(orbit.r * 0.9).toFixed(1)} 0" />
+    ${planetTextureHTML(planetClass, orbit.r)}
     ${moonsFrontHTML}
   </g>`;
 }

@@ -728,12 +728,18 @@ body.orbit-modal-open {
   filter: drop-shadow(0 0 5px rgba(224, 230, 240, 0.22));
 }
 
-.orbit-system-band {
+.orbit-system-texture {
   fill: none;
-  stroke: rgba(245, 248, 255, 0.8);
-  stroke-width: 1.5;
+  opacity: 0.94;
+  pointer-events: none;
   stroke-linecap: round;
-  opacity: 0;
+  stroke-linejoin: round;
+}
+
+.orbit-system-texture.spot {
+  fill: currentColor;
+  stroke: none;
+  opacity: 0.78;
 }
 
 .orbit-system-planet-group.planet-rocky .orbit-system-planet { filter: drop-shadow(0 0 5px rgba(183, 170, 146, 0.42)); }
@@ -741,17 +747,30 @@ body.orbit-modal-open {
 .orbit-system-planet-group.planet-ice .orbit-system-planet { filter: drop-shadow(0 0 7px rgba(216, 244, 255, 0.58)); }
 .orbit-system-planet-group.planet-lava .orbit-system-planet { filter: drop-shadow(0 0 8px rgba(232, 90, 46, 0.68)); }
 
-.orbit-system-planet-group.planet-rocky .orbit-system-band,
-.orbit-system-planet-group.planet-ocean .orbit-system-band,
-.orbit-system-planet-group.planet-ice .orbit-system-band,
-.orbit-system-planet-group.planet-lava .orbit-system-band {
-  opacity: 1;
+.orbit-system-planet-group.planet-rocky .orbit-system-texture {
+  color: rgba(245, 229, 190, 0.95);
+  stroke: currentColor;
+  stroke-width: 1.2;
 }
 
-.orbit-system-planet-group.planet-rocky .orbit-system-band { stroke: rgba(232, 218, 185, 0.9); }
-.orbit-system-planet-group.planet-ocean .orbit-system-band { stroke: rgba(115, 224, 255, 0.92); }
-.orbit-system-planet-group.planet-ice .orbit-system-band { stroke: rgba(245, 252, 255, 0.95); }
-.orbit-system-planet-group.planet-lava .orbit-system-band { stroke: rgba(255, 132, 72, 0.96); }
+.orbit-system-planet-group.planet-ocean .orbit-system-texture {
+  color: rgba(185, 244, 255, 0.98);
+  stroke: currentColor;
+  stroke-width: 1.15;
+}
+
+.orbit-system-planet-group.planet-ice .orbit-system-texture {
+  color: rgba(255, 255, 255, 0.95);
+  stroke: currentColor;
+  stroke-width: 1.1;
+}
+
+.orbit-system-planet-group.planet-lava .orbit-system-texture {
+  color: rgba(255, 206, 88, 0.95);
+  stroke: currentColor;
+  stroke-width: 1.35;
+  filter: drop-shadow(0 0 2px rgba(255, 116, 48, 0.8));
+}
 
 .orbit-system-planet-group.atmosphere-methane .orbit-system-glow { fill: rgba(155, 166, 181, 0.3); opacity: 0.8; }
 .orbit-system-planet-group.atmosphere-oxygen .orbit-system-glow { fill: rgba(255, 107, 107, 0.3); opacity: 0.8; }
@@ -953,46 +972,45 @@ body.orbit-modal-open {
 }
 
 .orbit-tile-icon.planet {
+  width: 13px;
+  height: 13px;
   border: 1px solid #8fb4e8;
-  border-radius: 50%;
-  background: radial-gradient(circle at 35% 32%, #d5e5fb 0 15%, #6f99d0 28%, #20375d 70%);
-  box-shadow: 0 0 8px rgba(111, 153, 208, 0.55);
+  border-radius: 4px;
+  background: transparent;
+  box-shadow: 0 0 8px rgba(111, 153, 208, 0.42);
+  overflow: hidden;
 }
 
 .orbit-tile-icon.planet-rocky {
   border-color: #b7aa92;
-  background: radial-gradient(circle at 35% 32%, #e3d7bd 0 15%, #8f8068 30%, #3c342d 72%);
+  background:
+    radial-gradient(circle at 24% 30%, #b7aa92 0 1.2px, transparent 1.4px),
+    radial-gradient(circle at 68% 68%, #b7aa92 0 1.4px, transparent 1.6px),
+    linear-gradient(135deg, transparent 0 42%, #b7aa92 43% 50%, transparent 51%);
   box-shadow: 0 0 8px rgba(183, 170, 146, 0.42);
 }
 
 .orbit-tile-icon.planet-ocean {
   border-color: #72c7db;
-  background: radial-gradient(circle at 35% 32%, #c8f2ff 0 15%, #238cb9 31%, #123f72 72%);
+  background:
+    repeating-linear-gradient(165deg, #72c7db 0 1px, transparent 1px 4px);
   box-shadow: 0 0 8px rgba(72, 183, 220, 0.52);
 }
 
 .orbit-tile-icon.planet-ice {
   border-color: #d8f4ff;
-  background: radial-gradient(circle at 35% 32%, #ffffff 0 16%, #bdeeff 34%, #6f92bf 74%);
+  background:
+    linear-gradient(45deg, transparent 0 43%, #d8f4ff 44% 49%, transparent 50%),
+    linear-gradient(135deg, transparent 0 60%, #d8f4ff 61% 66%, transparent 67%);
   box-shadow: 0 0 9px rgba(216, 244, 255, 0.55);
 }
 
 .orbit-tile-icon.planet-lava {
   border-color: #ff9a4d;
-  background: radial-gradient(circle at 35% 32%, #ffd17a 0 14%, #e85a2e 32%, #3d1518 74%);
+  background:
+    linear-gradient(105deg, transparent 0 35%, #ff9a4d 36% 44%, transparent 45%),
+    linear-gradient(160deg, transparent 0 58%, #ff9a4d 59% 66%, transparent 67%);
   box-shadow: 0 0 10px rgba(232, 90, 46, 0.64);
-}
-
-.orbit-tile-icon.planet::before {
-  content: "";
-  position: absolute;
-  left: -3px;
-  right: -3px;
-  top: 4px;
-  height: 3px;
-  border-top: 1px solid rgba(212, 166, 74, 0.95);
-  border-radius: 50%;
-  transform: rotate(-18deg);
 }
 
 .orbit-tile-icon.atmosphere {
@@ -1021,39 +1039,6 @@ body.orbit-modal-open {
   box-shadow: 0 0 8px rgba(255, 107, 107, 0.42);
 }
 
-.orbit-tile-icon.atmosphere::before,
-.orbit-tile-icon.atmosphere::after {
-  content: "";
-  position: absolute;
-  inset: 2px;
-  border-top: 1px solid rgba(176, 238, 248, 0.95);
-  border-radius: 50%;
-}
-
-.orbit-tile-icon.atmosphere::after {
-  inset: 4px 1px 1px 4px;
-  transform: rotate(38deg);
-}
-
-.orbit-tile-icon.atmosphere-ch::before,
-.orbit-tile-icon.atmosphere-ch::after {
-  border-top-color: rgba(155, 166, 181, 0.95);
-}
-
-.orbit-tile-icon.atmosphere-h::before,
-.orbit-tile-icon.atmosphere-h::after {
-  border-top-color: rgba(245, 247, 251, 0.95);
-}
-
-.orbit-tile-icon.atmosphere-n::before,
-.orbit-tile-icon.atmosphere-n::after {
-  border-top-color: rgba(120, 168, 255, 0.95);
-}
-
-.orbit-tile-icon.atmosphere-o::before,
-.orbit-tile-icon.atmosphere-o::after {
-  border-top-color: rgba(255, 107, 107, 0.95);
-}
 
 .orbit-tile-icon.moons {
   width: 13px;
