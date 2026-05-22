@@ -1478,9 +1478,9 @@ body.dragging-tile .orbit-option {
   .orbit-game-layout {
     max-width: 1120px;
     display: grid;
-    grid-template-columns: minmax(300px, 420px) minmax(560px, 600px);
+    grid-template-columns: minmax(560px, 600px) minmax(300px, 420px);
     grid-template-areas:
-      "clues play";
+      "play clues";
     align-items: start;
     justify-content: center;
     gap: 1.25rem;
