@@ -19,7 +19,8 @@ body, html {
   user-select: none;
 }
 
-body.orbit-modal-open {
+body.orbit-modal-open,
+html:has(body.orbit-modal-open) {
   overflow: hidden;
 }
 
