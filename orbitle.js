@@ -1136,7 +1136,7 @@ function infoPopupHTML() {
     <div class="orbit-info-subtitle">A game of celestial deduction</div>
     <div class="orbit-info-stat">
       <span>Daily puzzle</span>
-      <strong>Orbitle #${puzzleNumber()}</strong>
+      <strong>#${puzzleNumber()}</strong>
     </div>
     <div class="orbit-info-stat">
       <span>Games played</span>
@@ -1172,6 +1172,10 @@ function popupShellHTML() {
   return showHelp ? helpPopupHTML() : infoPopupHTML();
 }
 
+function syncModalState() {
+  document.body?.classList.toggle("orbit-modal-open", showHelp || showInfo || status === "won");
+}
+
 function updateTopPopups() {
   const helpButton = document.querySelector("[data-action='toggle-help']");
   const infoButton = document.querySelector("[data-action='toggle-info']");
@@ -1181,8 +1185,8 @@ function updateTopPopups() {
   if (infoButton) infoButton.setAttribute("aria-label", showInfo ? "Hide info" : "Show info");
 
   const shell = document.querySelector("[data-popup-shell]");
-  if (!shell) return;
-  shell.innerHTML = popupShellHTML();
+  if (shell) shell.innerHTML = popupShellHTML();
+  syncModalState();
 }
 
 // ============================================================
@@ -1476,6 +1480,7 @@ function render() {
 
   h += `</div>`; // end orbit-root
   app.innerHTML = h;
+  syncModalState();
   updateOrbitSystemFrame();
 }
 

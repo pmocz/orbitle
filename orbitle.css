@@ -19,6 +19,10 @@ body, html {
   user-select: none;
 }
 
+body.orbit-modal-open {
+  overflow: hidden;
+}
+
 .orbit-root {
   position: relative;
   z-index: 1;
