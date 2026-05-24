@@ -1,1 +1,31 @@
+# Editor
 *~
+.DS_Store
+*.swp
+
+# Dependencies
+node_modules/
+
+# Capacitor build output
+www/
+
+# iOS
+ios/App/build/
+ios/App/Pods/
+ios/App/App.xcworkspace/xcuserdata/
+ios/App/*.xcarchive
+*.xcuserstate
+*.xcworkspace/xcuserdata
+
+# Android
+android/.gradle/
+android/app/build/
+android/build/
+*.apk
+*.aab
+*.keystore
+
+# Env / secrets
+.env
+.env.*
+

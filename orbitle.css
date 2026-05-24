@@ -17,6 +17,8 @@ body, html {
   min-height: 100vh;
   overflow-x: hidden;
   user-select: none;
+  padding-top: env(safe-area-inset-top);
+  padding-bottom: env(safe-area-inset-bottom);
 }
 
 body.orbit-modal-open,
