@@ -1440,6 +1440,18 @@ body.dragging-tile .orbit-option {
   margin-bottom: 0.5rem;
 }
 
+.orbit-reveal-time {
+  margin-bottom: 0.75rem;
+  color: #9cb8df;
+  font-size: 0.75rem;
+  letter-spacing: 0.04em;
+}
+
+.orbit-reveal-time strong {
+  color: #ffe89a;
+  font-size: 0.82rem;
+}
+
 .orbit-reveal-copy {
   margin-bottom: 1rem;
   color: #c0c8d8;

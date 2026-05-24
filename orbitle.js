@@ -508,6 +508,7 @@ let placementSeq = 0;
 let pointerDrag = null;
 let suppressNextClick = null;
 let mutedStrikeHoverSlot = null;
+let puzzleStartTime = 0;
 let orbitAnimationStarted = false;
 let orbitAnimationEpoch = Date.now();
 const ORBIT_CENTER = { x: 300, y: 50 };
@@ -525,7 +526,11 @@ const SHARE_COPIED_MS = 1400;
 const SOLVED_STORAGE_PREFIX = "orbitle-solved-";
 const RESULT_STORAGE_PREFIX = "orbitle-result-";
 const ATTEMPT_STORAGE_PREFIX = "orbitle-attempt-";
+const SOLVE_TIME_STORAGE_PREFIX = "orbitle-time-";
 const GAMES_PLAYED_KEY = "orbitle-games-played";
+const BEST_TIME_KEY = "orbitle-best-time";
+const TOTAL_TIME_KEY = "orbitle-total-time";
+const TIMED_SOLVES_KEY = "orbitle-timed-solves";
 const TUTORIAL_SEEN_KEY = "orbitle-tutorial-seen";
 const PUZZLE_NUMBER_EPOCH = Date.UTC(2026, 0, 1);
 const CATEGORY_SHARE_SQUARES = {
@@ -558,6 +563,7 @@ function resetGameState() {
   crossedClues = new Set();
   placementOrder = [];
   placementSeq = 0;
+  puzzleStartTime = 0;
   pointerDrag = null;
   suppressNextClick = null;
   orbitAnimationStarted = false;
@@ -615,11 +621,44 @@ const Persistence = {
     return this.dailyKey(ATTEMPT_STORAGE_PREFIX, puzzleId);
   },
 
+  solveTimeKey(puzzleId = currentPuzzleId) {
+    return this.dailyKey(SOLVE_TIME_STORAGE_PREFIX, puzzleId);
+  },
+
+  todaySolveTime() {
+    const v = parseInt(this.get(this.solveTimeKey(), "0"), 10);
+    return v > 0 ? v : null;
+  },
+
   markPuzzleSolved() {
     const wasSolved = this.isPuzzleSolved();
     this.set(this.solvedKey(), "1");
     this.remove(this.attemptKey());
     if (!wasSolved) this.set(GAMES_PLAYED_KEY, String(this.gamesPlayed() + 1));
+    return !wasSolved;
+  },
+
+  bestTime() {
+    const v = parseInt(this.get(BEST_TIME_KEY, "0"), 10);
+    return v > 0 ? v : null;
+  },
+
+  averageTime() {
+    const total = parseFloat(this.get(TOTAL_TIME_KEY, "0")) || 0;
+    const count = parseInt(this.get(TIMED_SOLVES_KEY, "0"), 10) || 0;
+    if (count === 0) return null;
+    return Math.round(total / count);
+  },
+
+  recordSolveTime(seconds) {
+    if (!seconds || seconds <= 0) return;
+    this.set(this.solveTimeKey(), String(seconds));
+    const best = this.bestTime();
+    if (best === null || seconds < best) this.set(BEST_TIME_KEY, String(seconds));
+    const total = (parseFloat(this.get(TOTAL_TIME_KEY, "0")) || 0) + seconds;
+    const count = (parseInt(this.get(TIMED_SOLVES_KEY, "0"), 10) || 0) + 1;
+    this.set(TOTAL_TIME_KEY, String(total));
+    this.set(TIMED_SOLVES_KEY, String(count));
   },
 
   isPuzzleSolved(puzzleId = currentPuzzleId) {
@@ -668,6 +707,9 @@ const Persistence = {
       strikes = restoreStrikes(saved.strikes);
       crossedClues = restoreCrossedClues(saved.crossedClues);
       restorePlacementOrder(saved.placementOrder);
+      if (Number.isFinite(saved.puzzleStartTime) && saved.puzzleStartTime > 0) {
+        puzzleStartTime = saved.puzzleStartTime;
+      }
       startOrbitAnimationIfNeeded();
     } catch (_) {
       this.clearAttempt();
@@ -749,6 +791,7 @@ function attemptPayload() {
     ])),
     crossedClues: [...crossedClues],
     placementOrder,
+    puzzleStartTime,
   };
 }
 
@@ -759,6 +802,7 @@ function loadDailyPuzzle() {
   if (status === "won") {
     board = solvedBoard();
   } else {
+    puzzleStartTime = Date.now();
     Persistence.loadSavedAttempt();
   }
   if (status === "won" && !orbitAnimationStarted) {
@@ -820,6 +864,13 @@ function finalPlacementOrder() {
     });
   });
   return ordered.slice(0, 16);
+}
+
+function formatTime(seconds) {
+  if (!seconds || seconds <= 0) return "—";
+  const m = Math.floor(seconds / 60);
+  const s = seconds % 60;
+  return `${m}:${String(s).padStart(2, "0")}`;
 }
 
 function buildShareResultText() {
@@ -898,7 +949,11 @@ function setWon() {
     orbitAnimationEpoch = Date.now();
   }
   Persistence.saveShareResult(buildShareResultText());
-  Persistence.markPuzzleSolved();
+  const isFirstSolve = Persistence.markPuzzleSolved();
+  if (isFirstSolve && puzzleStartTime > 0) {
+    const solveSeconds = Math.round((Date.now() - puzzleStartTime) / 1000);
+    Persistence.recordSolveTime(solveSeconds);
+  }
 }
 
 // ============================================================
@@ -1149,16 +1204,29 @@ function infoPopupHTML() {
       <span>Games played</span>
       <strong>${Persistence.gamesPlayed()}</strong>
     </div>
+    <div class="orbit-info-stat">
+      <span>Best time</span>
+      <strong>${formatTime(Persistence.bestTime())}</strong>
+    </div>
+    <div class="orbit-info-stat">
+      <span>Avg. time</span>
+      <strong>${formatTime(Persistence.averageTime())}</strong>
+    </div>
     ${shareButtonHTML("orbit-info-share")}
     <div class="orbit-info-copy">Copyright 2026. All Rights Reserved.</div>
   `, { cardClass: "orbit-popup orbit-info-content", closeAction: "close-popup" });
 }
 
 function wonPopupHTML() {
+  const solveTime = Persistence.todaySolveTime();
+  const solveTimeHTML = solveTime
+    ? `<div class="orbit-reveal-time">completed in <strong>${escHTML(formatTime(solveTime))}</strong></div>`
+    : "";
   return modalShellHTML(`
     <div class="orbit-reveal-sub">Orbitle #${puzzleNumber()}</div>
     <div class="orbit-reveal-system">${orbitSystemHTML(false)}</div>
     <div class="orbit-reveal-title">Solved</div>
+    ${solveTimeHTML}
     <div class="orbit-reveal-copy">
       ${escHTML(generateWinFlavorText())}
     </div>
