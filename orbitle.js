@@ -1396,31 +1396,33 @@ function animateOrbitSystem() {
 }
 
 function planetTextureHTML(planetClass, r) {
+  const n = value => value.toFixed(1);
   if (planetClass === "rocky") {
     return `<g class="orbit-system-texture">
-      <circle class="orbit-system-texture spot" cx="${(-r * 0.42).toFixed(1)}" cy="${(-r * 0.22).toFixed(1)}" r="${(r * 0.28).toFixed(1)}" />
-      <circle class="orbit-system-texture spot" cx="${(r * 0.36).toFixed(1)}" cy="${(r * 0.28).toFixed(1)}" r="${(r * 0.24).toFixed(1)}" />
-      <circle class="orbit-system-texture spot" cx="${(r * 0.16).toFixed(1)}" cy="${(-r * 0.44).toFixed(1)}" r="${(r * 0.14).toFixed(1)}" />
-      <path d="M${(-r * 0.72).toFixed(1)} ${(r * 0.38).toFixed(1)} L${(-r * 0.25).toFixed(1)} ${(r * 0.02).toFixed(1)} L${(r * 0.18).toFixed(1)} ${(r * 0.26).toFixed(1)} L${(r * 0.68).toFixed(1)} ${(r * 0.02).toFixed(1)}" />
+      <circle class="orbit-system-texture spot" cx="${n(-r * 0.33)}" cy="${n(-r * 0.27)}" r="${n(r * 0.16)}" />
+      <circle class="orbit-system-texture spot" cx="${n(r * 0.34)}" cy="${n(r * 0.32)}" r="${n(r * 0.19)}" />
+      <path class="orbit-system-texture band" d="M${n(-r * 0.78)} ${n(r * 0.6)} L${n(-r * 0.18)} ${n(r * 0.02)} L${n(r * 0.1)} ${n(-r * 0.13)} L${n(r * 0.68)} ${n(-r * 0.68)}" />
     </g>`;
   }
   if (planetClass === "ocean") {
     return `<g class="orbit-system-texture">
-      <path d="M${(-r * 0.78).toFixed(1)} ${(-r * 0.24).toFixed(1)} C${(-r * 0.38).toFixed(1)} ${(-r * 0.46).toFixed(1)} ${(r * 0.02).toFixed(1)} ${(-r * 0.02).toFixed(1)} ${(r * 0.62).toFixed(1)} ${(-r * 0.24).toFixed(1)}" />
-      <path d="M${(-r * 0.72).toFixed(1)} ${(r * 0.18).toFixed(1)} C${(-r * 0.28).toFixed(1)} ${(-r * 0.04).toFixed(1)} ${(r * 0.18).toFixed(1)} ${(r * 0.42).toFixed(1)} ${(r * 0.72).toFixed(1)} ${(r * 0.16).toFixed(1)}" />
+      <path d="M${n(-r * 0.82)} ${n(-r * 0.52)} L${n(-r * 0.08)} ${n(-r * 0.86)}" />
+      <path d="M${n(-r * 0.88)} ${n(-r * 0.12)} L${n(r * 0.52)} ${n(-r * 0.76)}" />
+      <path d="M${n(-r * 0.7)} ${n(r * 0.25)} L${n(r * 0.86)} ${n(-r * 0.46)}" />
+      <path d="M${n(-r * 0.42)} ${n(r * 0.62)} L${n(r * 0.86)} ${n(r * 0.04)}" />
+      <path d="M${n(r * 0.02)} ${n(r * 0.82)} L${n(r * 0.72)} ${n(r * 0.5)}" />
     </g>`;
   }
   if (planetClass === "ice") {
     return `<g class="orbit-system-texture">
-      <path d="M${(-r * 0.55).toFixed(1)} ${(-r * 0.62).toFixed(1)} L${(-r * 0.08).toFixed(1)} ${(-r * 0.08).toFixed(1)} L${(r * 0.52).toFixed(1)} ${(r * 0.58).toFixed(1)}" />
-      <path d="M${(-r * 0.08).toFixed(1)} ${(-r * 0.08).toFixed(1)} L${(-r * 0.42).toFixed(1)} ${(r * 0.38).toFixed(1)}" />
-      <path d="M${(r * 0.08).toFixed(1)} ${(r * 0.08).toFixed(1)} L${(r * 0.42).toFixed(1)} ${(-r * 0.35).toFixed(1)}" />
+      <path d="M${n(-r * 0.72)} ${n(r * 0.52)} L${n(-r * 0.06)} ${n(-r * 0.12)} L${n(r * 0.58)} ${n(-r * 0.72)}" />
+      <path d="M${n(-r * 0.06)} ${n(r * 0.82)} L${n(r * 0.18)} ${n(r * 0.18)} L${n(r * 0.62)} ${n(-r * 0.18)}" />
     </g>`;
   }
   if (planetClass === "lava") {
     return `<g class="orbit-system-texture">
-      <path d="M${(-r * 0.18).toFixed(1)} ${(-r * 0.72).toFixed(1)} L${(-r * 0.02).toFixed(1)} ${(-r * 0.18).toFixed(1)} L${(-r * 0.26).toFixed(1)} ${(r * 0.18).toFixed(1)} L${(-r * 0.04).toFixed(1)} ${(r * 0.72).toFixed(1)}" />
-      <path d="M${(r * 0.35).toFixed(1)} ${(-r * 0.45).toFixed(1)} L${(r * 0.12).toFixed(1)} ${(r * 0.02).toFixed(1)} L${(r * 0.48).toFixed(1)} ${(r * 0.5).toFixed(1)}" />
+      <path d="M${n(-r * 0.62)} ${n(-r * 0.76)} L${n(-r * 0.34)} ${n(-r * 0.18)} L${n(-r * 0.48)} ${n(r * 0.18)} L${n(-r * 0.12)} ${n(r * 0.78)}" />
+      <path d="M${n(r * 0.34)} ${n(-r * 0.66)} L${n(r * 0.08)} ${n(-r * 0.06)} L${n(r * 0.42)} ${n(r * 0.62)}" />
     </g>`;
   }
   return "";
