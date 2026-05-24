@@ -1062,10 +1062,12 @@ function handleShareLink() {
   }, SHARE_COPIED_MS);
 }
 
-function handleShareResult() {
+async function handleShareResult() {
   const text = shareResultText();
-  const intentUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}`;
-  window.open(intentUrl, "_blank", "noopener,noreferrer");
+  if (navigator.share) {
+    try { await navigator.share({ text }); return; } catch (_) {}
+  }
+  window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}`, "_blank", "noopener,noreferrer");
 }
 
 function handleCopyResult() {
