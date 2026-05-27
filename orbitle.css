@@ -1395,6 +1395,7 @@ body.dragging-tile .orbit-option {
 
 /* ── Win overlay ── */
 .orbit-reveal {
+  z-index: 10;
   background: rgba(6, 8, 15, 0.92);
   backdrop-filter: blur(12px);
   padding: 2rem;
