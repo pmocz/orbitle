@@ -13,3 +13,4 @@ ios/
 android/
 package*.json
 update_apps.sh
+AGENT.md
