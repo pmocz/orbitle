@@ -1142,7 +1142,7 @@ function helpPopupHTML() {
     <div class="orbit-help-brand">Orbitle</div>
     <div class="orbit-help-title">How to Play</div>
     <div class="orbit-help-copy">
-      Use the observations to deduce each planet's <strong>color</strong>, <strong>type</strong>,
+      Use the observations to deduce each planet's <strong>color</strong>, <strong>terrain</strong>,
       <strong>atmosphere</strong>, and <strong>moon count</strong>.
     </div>
     <div class="orbit-help-graphic" aria-hidden="true">
