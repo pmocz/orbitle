@@ -399,13 +399,13 @@ html:has(body.orbit-modal-open) {
     top: 116px;
     transform: scale(1);
   }
-  48%, 70% {
+  48% {
     opacity: 1;
     left: calc(25% - 43px);
     top: 24px;
     transform: scale(1);
   }
-  80%, 100% {
+  52%, 100% {
     opacity: 0;
     left: calc(25% - 43px);
     top: 24px;
@@ -414,25 +414,25 @@ html:has(body.orbit-modal-open) {
 }
 
 @keyframes orbitHelpDragMoon {
-  0%, 38% {
+  0%, 58% {
     opacity: 0;
     left: calc(50% + 6px);
     top: 146px;
     transform: scale(0.96);
   }
-  44%, 58% {
+  64%, 73% {
     opacity: 1;
     left: calc(50% + 6px);
     top: 146px;
     transform: scale(1);
   }
-  73%, 88% {
+  83% {
     opacity: 1;
     left: calc(75% - 43px);
     top: 54px;
     transform: scale(1);
   }
-  96%, 100% {
+  87%, 100% {
     opacity: 0;
     left: calc(75% - 43px);
     top: 54px;
@@ -441,11 +441,11 @@ html:has(body.orbit-modal-open) {
 }
 
 @keyframes orbitHelpFillAmber {
-  0%, 64% {
+  0%, 48% {
     border-color: rgba(74, 88, 122, 0.7);
     background: rgba(68, 70, 76, 0.9);
   }
-  72%, 98% {
+  52%, 98% {
     border-color: rgba(245, 247, 252, 0.34);
     background: rgba(86, 88, 94, 0.96);
   }
@@ -456,11 +456,11 @@ html:has(body.orbit-modal-open) {
 }
 
 @keyframes orbitHelpFillMoon {
-  0%, 84% {
+  0%, 83% {
     border-color: rgba(74, 88, 122, 0.7);
     background: rgba(49, 38, 76, 0.9);
   }
-  91%, 98% {
+  87%, 98% {
     border-color: rgba(128, 92, 184, 0.42);
     background: rgba(65, 46, 98, 0.92);
   }
@@ -471,10 +471,10 @@ html:has(body.orbit-modal-open) {
 }
 
 @keyframes orbitHelpContentAmber {
-  0%, 66% {
+  0%, 48% {
     opacity: 0;
   }
-  72%, 98% {
+  52%, 98% {
     opacity: 1;
   }
   100% {
@@ -483,15 +483,35 @@ html:has(body.orbit-modal-open) {
 }
 
 @keyframes orbitHelpContentMoon {
-  0%, 86% {
+  0%, 83% {
     opacity: 0;
   }
-  91%, 98% {
+  87%, 98% {
     opacity: 1;
   }
   100% {
     opacity: 0;
   }
+}
+
+.orbit-help-picker-amber {
+  animation: orbitHelpPickerAmber 5.6s ease-in-out infinite;
+}
+
+.orbit-help-picker-moon {
+  animation: orbitHelpPickerMoon 5.6s ease-in-out infinite;
+}
+
+@keyframes orbitHelpPickerAmber {
+  0%, 48% { opacity: 1; filter: none; }
+  52%, 98% { opacity: 0.42; filter: grayscale(1); }
+  100%     { opacity: 1; filter: none; }
+}
+
+@keyframes orbitHelpPickerMoon {
+  0%, 83% { opacity: 1; filter: none; }
+  87%, 98% { opacity: 0.42; filter: grayscale(1); }
+  100%     { opacity: 1; filter: none; }
 }
 
 .orbit-info-title {
