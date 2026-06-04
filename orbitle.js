@@ -1805,6 +1805,7 @@ document.addEventListener("pointerdown", e => {
   const tile = e.target.closest("[data-action='pick-value']");
   if (!tile || status !== "playing") return;
   if (e.button !== undefined && e.button !== 0) return;
+  if (tile.classList.contains("muted")) return;
   startPointerTileDrag(e, tile);
 });
 
