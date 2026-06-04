@@ -653,10 +653,9 @@ html:has(body.orbit-modal-open) {
   user-select: none;
 }
 
-.orbit-clear-icon {
+.orbit-board-icon {
   position: absolute;
   top: 0.55rem;
-  right: 0.65rem;
   z-index: 2;
   width: 28px;
   height: 28px;
@@ -672,7 +671,17 @@ html:has(body.orbit-modal-open) {
   transition: all 0.15s ease;
 }
 
-.orbit-clear-symbol {
+.orbit-board-icon--left  { left:  0.65rem; }
+.orbit-board-icon--right { right: 0.65rem; }
+
+.orbit-board-icon:disabled,
+.orbit-board-icon.disabled {
+  opacity: 0.25;
+  cursor: default;
+  pointer-events: none;
+}
+
+.orbit-board-symbol {
   width: 15px;
   height: 15px;
   display: block;
@@ -684,7 +693,7 @@ html:has(body.orbit-modal-open) {
   stroke-linejoin: round;
 }
 
-.orbit-clear-icon:hover {
+.orbit-board-icon:hover {
   border-color: rgba(212, 166, 74, 0.68);
   color: #ffe89a;
   background: rgba(42, 34, 24, 0.82);

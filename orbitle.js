@@ -505,6 +505,7 @@ let resultCopiedTimer = null;
 let crossedClues = new Set();
 let placementOrder = [];
 let placementSeq = 0;
+let history = [];
 let pointerDrag = null;
 let suppressNextClick = null;
 let mutedStrikeHoverSlot = null;
@@ -563,6 +564,7 @@ function resetGameState() {
   crossedClues = new Set();
   placementOrder = [];
   placementSeq = 0;
+  history = [];
   puzzleStartTime = 0;
   pointerDrag = null;
   suppressNextClick = null;
@@ -573,6 +575,19 @@ function resetGameState() {
 
 function boardHasPlacedTiles() {
   return CATEGORY_KEYS.some(cat => board[cat].some(v => v !== null));
+}
+
+function snapshotState() {
+  return {
+    board: Object.fromEntries(CATEGORY_KEYS.map(cat => [cat, [...board[cat]]])),
+    strikes: Object.fromEntries(CATEGORY_KEYS.map(cat => [cat, strikes[cat].map(s => new Set(s))])),
+    placementOrder: placementOrder.map(item => ({ ...item })),
+    placementSeq,
+  };
+}
+
+function pushHistory() {
+  history.push(snapshotState());
 }
 
 function startOrbitAnimationIfNeeded() {
@@ -980,6 +995,7 @@ function handleStrikeSelect(slot) {
 }
 
 function placeValue(cat, slot, valIdx) {
+  pushHistory();
   const next = { ...board, [cat]: [...board[cat]] };
   if (next[cat][slot] === valIdx) {
     next[cat][slot] = null;
@@ -1001,6 +1017,7 @@ function placeValue(cat, slot, valIdx) {
 
 function addStrike(cat, slot, valIdx) {
   if (strikes[cat][slot].has(valIdx)) return;
+  pushHistory();
   const ns = new Set(strikes[cat][slot]);
   ns.add(valIdx);
   strikes = { ...strikes, [cat]: strikes[cat].map((s, i) => i === slot ? ns : s) };
@@ -1037,9 +1054,22 @@ function handleTileStrikeDrop(cat, slot, valIdx) {
 
 function handleRemoveValue(cat, slot) {
   if (status !== "playing") return;
-  if (board[cat][slot] !== null) removePlacement(cat, board[cat][slot]);
+  if (board[cat][slot] === null) return;
+  pushHistory();
+  removePlacement(cat, board[cat][slot]);
   board = { ...board, [cat]: board[cat].map((v, i) => i === slot ? null : v) };
   selected = selection(slot);
+  Persistence.saveAttempt();
+  render();
+}
+
+function handleUndo() {
+  if (history.length === 0) return;
+  const snap = history.pop();
+  board = snap.board;
+  strikes = snap.strikes;
+  placementOrder = snap.placementOrder;
+  placementSeq = snap.placementSeq;
   Persistence.saveAttempt();
   render();
 }
@@ -1523,8 +1553,15 @@ function render() {
 
     // Board
     h += `<div class="orbit-board">`;
-    h += `<button class="orbit-clear-icon" data-action="clear" aria-label="Clear board">
-      <svg class="orbit-clear-symbol" viewBox="0 0 24 24" aria-hidden="true">
+    h += `<button class="orbit-board-icon orbit-board-icon--left${!boardHasPlacedTiles() ? " disabled" : ""}" data-action="clear" aria-label="Reset board"${!boardHasPlacedTiles() ? " disabled" : ""}>
+      <svg class="orbit-board-symbol" viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M3 6h18" />
+        <path d="M8 6V4h8v2" />
+        <path d="M19 6l-1 13H6L5 6" />
+      </svg>
+    </button>
+    <button class="orbit-board-icon orbit-board-icon--right${history.length === 0 ? " disabled" : ""}" data-action="undo" aria-label="Undo last move"${history.length === 0 ? " disabled" : ""}>
+      <svg class="orbit-board-symbol" viewBox="0 0 24 24" aria-hidden="true">
         <path d="M4.5 9a8 8 0 1 1 1.2 8.3" />
         <path d="M4.5 4.5V9h4.5" />
       </svg>
@@ -1669,6 +1706,7 @@ document.addEventListener("click", e => {
     case "select-strike": handleStrikeSelect(parseInt(el.dataset.slot)); break;
     case "pick-value": handleValuePick(el.dataset.cat, parseInt(el.dataset.val)); break;
     case "remove-value": handleRemoveValue(el.dataset.cat, parseInt(el.dataset.slot)); break;
+    case "undo":       handleUndo(); break;
     case "clear":      handleClear(); break;
   }
 });
