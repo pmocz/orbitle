@@ -1028,6 +1028,7 @@ function handleValuePick(cat, valIdx) {
   if (status !== "playing") return;
   const slot = selected.slot;
   if (slot === null) return;
+  if (tileIsPlaced(cat, valIdx)) return;
 
   if (selected.mode === "strike") {
     addStrike(cat, slot, valIdx);
@@ -1843,6 +1844,7 @@ document.addEventListener("pointerdown", e => {
   const tile = e.target.closest("[data-action='pick-value']");
   if (!tile || status !== "playing") return;
   if (e.button !== undefined && e.button !== 0) return;
+  if (tile.classList.contains("placed")) return;
   startPointerTileDrag(e, tile);
 });
 
