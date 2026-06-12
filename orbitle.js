@@ -1713,12 +1713,33 @@ document.addEventListener("click", e => {
 });
 
 document.addEventListener("keydown", e => {
-  if (e.key !== "Escape" || (!showHelp && !showInfo)) return;
-  if (showHelp) Persistence.markTutorialSeen();
-  showHelp = false;
-  showInfo = false;
-  shareCopied = false;
-  updateTopPopups();
+  if (e.key === "Escape") {
+    if (showHelp || showInfo) {
+      if (showHelp) Persistence.markTutorialSeen();
+      showHelp = false;
+      showInfo = false;
+      shareCopied = false;
+      updateTopPopups();
+    } else if (status === "playing" && selected.slot !== null) {
+      selected = selection();
+      render();
+    }
+    return;
+  }
+  if (status !== "playing" || showHelp || showInfo) return;
+  if (e.target.tagName === "INPUT" || e.target.tagName === "TEXTAREA") return;
+  if (e.key === "ArrowLeft" || e.key === "ArrowRight") {
+    e.preventDefault();
+    const numSlots = 4;
+    const current = selected.slot;
+    let next;
+    if (current === null) {
+      next = e.key === "ArrowLeft" ? numSlots - 1 : 0;
+    } else {
+      next = (current + (e.key === "ArrowLeft" ? -1 : 1) + numSlots) % numSlots;
+    }
+    handleCellClick(next);
+  }
 });
 
 document.addEventListener("pointerout", e => {
@@ -1733,6 +1754,7 @@ document.addEventListener("pointerout", e => {
 function clearDragHighlights() {
   document.querySelectorAll(".orbit-column.drag-over").forEach(el => el.classList.remove("drag-over"));
   document.querySelectorAll(".orbit-strike-drop.strike-over").forEach(el => el.classList.remove("strike-over"));
+  document.querySelectorAll(".orbit-option.rule-out-over").forEach(el => el.classList.remove("rule-out-over"));
 }
 
 function clearStrikePreviews() {
@@ -1750,11 +1772,20 @@ function showStrikePreviews(cat, valIdx) {
 }
 
 function dragTargetKey(target) {
-  return target ? `${target.type}:${target.slot}` : "";
+  if (!target) return "";
+  if (target.type === "picker") return `picker:${target.cat}:${target.val}`;
+  return `${target.type}:${target.slot}`;
 }
 
 function getPointerDropTarget(x, y) {
   const target = document.elementFromPoint(x, y);
+  if (pointerDrag?.type === "strike-drag") {
+    const tile = target?.closest?.("[data-action='pick-value']");
+    if (tile && !tile.classList.contains("placed")) {
+      return { type: "picker", cat: tile.dataset.cat, val: parseInt(tile.dataset.val) };
+    }
+    return null;
+  }
   const strike = target?.closest?.("[data-strike-column='true']");
   if (strike) return { type: "strike", slot: parseInt(strike.dataset.slot) };
   const column = target?.closest?.("[data-drop-column='true']");
@@ -1769,6 +1800,12 @@ function applyDragHighlight(target) {
     document
       .querySelector(`.orbit-strike-drop[data-slot='${target.slot}']`)
       ?.classList.add("strike-over");
+    return;
+  }
+  if (target.type === "picker") {
+    document
+      .querySelector(`.orbit-option[data-cat='${target.cat}'][data-val='${target.val}']`)
+      ?.classList.add("rule-out-over");
     return;
   }
   document
@@ -1797,6 +1834,7 @@ function hideDragGhost() {
   if (!ghost) return;
   ghost.style.display = "none";
   ghost.innerHTML = "";
+  ghost.classList.remove("strike-drag");
 }
 
 function startPointerTileDrag(e, tile) {
@@ -1812,6 +1850,20 @@ function startPointerTileDrag(e, tile) {
   tile.setPointerCapture?.(e.pointerId);
 }
 
+function startPointerStrikeDrag(e, strikeEl) {
+  pointerDrag = {
+    type: "strike-drag",
+    pointerId: e.pointerId,
+    startX: e.clientX,
+    startY: e.clientY,
+    dragging: false,
+    tileHTML: strikeEl.innerHTML,
+    targetKey: "",
+    data: { slot: parseInt(strikeEl.dataset.slot) }
+  };
+  strikeEl.setPointerCapture?.(e.pointerId);
+}
+
 function updatePointerDropTarget(x, y) {
   const target = getPointerDropTarget(x, y);
   const key = dragTargetKey(target);
@@ -1825,6 +1877,10 @@ function finishPointerTileDrag(x, y) {
   const data = pointerDrag.data;
   const target = getPointerDropTarget(x, y);
   if (!target) return;
+  if (pointerDrag.type === "strike-drag") {
+    if (target.type === "picker") handleTileStrikeDrop(target.cat, data.slot, target.val);
+    return;
+  }
   if (target.type === "strike") {
     handleTileStrikeDrop(data.cat, target.slot, data.val);
     return;
@@ -1848,6 +1904,13 @@ document.addEventListener("pointerdown", e => {
   startPointerTileDrag(e, tile);
 });
 
+document.addEventListener("pointerdown", e => {
+  const strikeEl = e.target.closest("[data-strike-column='true']");
+  if (!strikeEl || status !== "playing") return;
+  if (e.button !== undefined && e.button !== 0) return;
+  startPointerStrikeDrag(e, strikeEl);
+});
+
 document.addEventListener("pointermove", e => {
   if (!pointerDrag || pointerDrag.pointerId !== e.pointerId) return;
   const dx = e.clientX - pointerDrag.startX;
@@ -1856,8 +1919,13 @@ document.addEventListener("pointermove", e => {
   if (!pointerDrag.dragging) {
     pointerDrag.dragging = true;
     document.body?.classList.add("dragging-tile");
-    showStrikePreviews(pointerDrag.data.cat, pointerDrag.data.val);
+    if (pointerDrag.type !== "strike-drag") {
+      showStrikePreviews(pointerDrag.data.cat, pointerDrag.data.val);
+    }
     showDragGhost(e.clientX, e.clientY, pointerDrag.tileHTML);
+    if (pointerDrag.type === "strike-drag") {
+      document.getElementById("drag-ghost")?.classList.add("strike-drag");
+    }
   } else {
     moveDragGhost(e.clientX, e.clientY);
   }
