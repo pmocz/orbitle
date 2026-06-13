@@ -496,6 +496,7 @@ let board = emptyBoard();
 let strikes = emptyStrikes();
 let selected = { cat: null, slot: null, mode: "place" };
 let status = "playing"; // playing | won | done
+let pendingRollover = false;
 let showHelp = false;
 let showInfo = false;
 let shareCopied = false;
@@ -568,6 +569,7 @@ function resetGameState() {
   puzzleStartTime = 0;
   pointerDrag = null;
   suppressNextClick = null;
+  pendingRollover = false;
   orbitAnimationStarted = false;
   orbitAnimationEpoch = Date.now();
   document.body?.classList.remove("dragging-tile");
@@ -1127,13 +1129,29 @@ function updateCountdowns() {
   });
 }
 
-function checkDailyRollover() {
-  if (currentPuzzleId === utcPuzzleId()) return;
+function hasAnyProgress() {
+  return CATEGORY_KEYS.some(cat =>
+    board[cat].some(v => v !== null) ||
+    strikes[cat].some(s => s.size > 0)
+  );
+}
+
+function doRollover() {
+  pendingRollover = false;
   loading = true;
   resetGameState();
   loadDailyPuzzle();
   loading = false;
   render();
+}
+
+function checkDailyRollover() {
+  if (currentPuzzleId === utcPuzzleId()) return;
+  if (status === "playing" && hasAnyProgress()) {
+    if (!pendingRollover) { pendingRollover = true; render(); }
+    return;
+  }
+  doRollover();
 }
 
 function tickDailyClock() {
@@ -1548,6 +1566,10 @@ function render() {
     h += `<div class="orbit-loading">Charting the system...</div>`;
   }
 
+  if (pendingRollover) {
+    h += `<div class="orbit-rollover-banner">New puzzle is ready! <button class="orbit-rollover-btn" data-action="load-new-puzzle">Load it now</button></div>`;
+  }
+
   if (!loading && puzzle) {
     h += `<div class="orbit-game-layout">`;
     h += `<div class="orbit-play-area">`;
@@ -1691,6 +1713,7 @@ document.addEventListener("click", e => {
       shareCopied = false;
       updateTopPopups();
       break;
+    case "load-new-puzzle": doRollover(); break;
     case "share-link":   handleShareLink(); break;
     case "share-result": handleShareResult(); break;
     case "copy-result":  handleCopyResult(); break;

@@ -576,6 +576,40 @@ html:has(body.orbit-modal-open) {
 }
 
 /* ── Loading ── */
+.orbit-rollover-banner {
+  width: 100%;
+  max-width: 600px;
+  margin: 0 auto 0.75rem;
+  padding: 0.55rem 1rem;
+  background: rgba(88, 52, 58, 0.85);
+  border: 1px solid #dfb7b9;
+  border-radius: 4px;
+  color: #f4dcdc;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.72rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.orbit-rollover-btn {
+  flex-shrink: 0;
+  padding: 0.3rem 0.75rem;
+  border: 1px solid #dfb7b9;
+  border-radius: 3px;
+  background: transparent;
+  color: #f4dcdc;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.72rem;
+  cursor: pointer;
+  letter-spacing: 0.04em;
+}
+
+.orbit-rollover-btn:hover {
+  background: rgba(154, 102, 106, 0.35);
+}
+
 .orbit-loading {
   font-family: 'Cormorant Garamond', serif;
   font-style: italic;
