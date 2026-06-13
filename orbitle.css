@@ -1340,6 +1340,7 @@ body.dragging-tile .orbit-option {
 .orbit-option.placed {
   opacity: 0.42;
   filter: grayscale(1);
+  pointer-events: none;
 }
 
 .orbit-option.muted:not(:hover) {
